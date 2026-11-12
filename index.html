@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#F4A340">
+<meta name="description" content="家事任務養寵物：家人互相派任務、賺金幣、買飼料和裝扮，一起養大寵物。">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="寵物樂園">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>家事寵物樂園</title>
+<style>
+:root{--bg:#FFF8EC;--card:#fff;--tx:#3B2A1A;--sub:#8a7358;--line:#EADFC8;--pri:#F4A340;--ok:#4E9F6E;--no:#E24B4A}
+@media(prefers-color-scheme:dark){:root{--bg:#1d1a16;--card:#2a2620;--tx:#f3eadb;--sub:#b5a48a;--line:#41392d}}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.5 -apple-system,"Noto Sans TC","Microsoft JhengHei",sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:12px 16px 40px;width:100%}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+h1{font-size:1.25rem;margin:0}
+.who{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.95rem}
+.chip{display:inline-flex;align-items:center;gap:5px;background:var(--pri);color:#fff;border-radius:999px;padding:4px 12px;font-weight:700}
+.ic{display:inline-block;vertical-align:-.2em;flex:none}
+h1{display:flex;align-items:center;gap:8px}
+button{display:inline-flex;align-items:center;justify-content:center;gap:6px;font:inherit;min-height:44px;padding:0 16px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--tx);cursor:pointer}
+button.pri{background:var(--pri);border-color:var(--pri);color:#fff;font-weight:700}
+button.ok{background:var(--ok);border-color:var(--ok);color:#fff;font-weight:700}
+button.no{background:var(--no);border-color:var(--no);color:#fff;font-weight:700}
+button:disabled{opacity:.6}
+input,select,textarea{font:inherit;width:100%;min-height:44px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--tx)}
+textarea{resize:vertical}
+label{display:block;margin-bottom:12px;font-size:.9rem;color:var(--sub)}
+label input,label select,label textarea{margin-top:4px;color:var(--tx)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px;overflow-wrap:anywhere}
+.card.self-task{border:2px solid #378ADD;background:#F0F6FC;}
+@media(prefers-color-scheme:dark){.card.self-task{background:#1a2736;}}
+
+.auth{max-width:420px;margin:24px auto}
+.tabs{display:flex;gap:6px;margin-bottom:12px;overflow-x:auto}
+.tabs button{flex:1 0 auto}
+.tabs button.on{background:var(--pri);border-color:var(--pri);color:#fff;font-weight:700}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px;align-items:start}
+.grid .card{margin:0}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.meta{color:var(--sub);font-size:.88rem;margin:4px 0}
+.row{display:flex;gap:8px;margin-top:8px}.row button{flex:1}
+.b{border-radius:999px;padding:2px 10px;font-size:.8rem;font-weight:700;white-space:nowrap;color:#fff;background:var(--sub)}
+.b.assigned{background:#378ADD}.b.submitted{background:#E8922A}.b.approved{background:var(--ok)}.b.rejected{background:var(--no)}.b.assignee_rejected{background:#9333EA}
+.b.self-badge{background:#1D63B8;margin-left:6px;}
+.warn{color:var(--no);font-size:.9rem;margin:4px 0}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:.9rem}
+th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+.empty{text-align:center;color:var(--sub);padding:24px 0}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);max-width:90vw;background:var(--tx);color:var(--bg);padding:10px 16px;border-radius:10px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:9}
+#toast.show{opacity:1}#toast.err{background:var(--no);color:#fff}
+.sc svg,.th svg{display:block;width:100%;height:auto}
+.th{position:relative;background:#FFF3DC;border-radius:10px;margin-bottom:2px;overflow:hidden}
+.ltd{position:absolute;top:6px;left:6px;background:#D4537E;color:#fff;border-radius:999px;padding:1px 9px;font-size:.72rem;font-weight:700;line-height:1.5;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.help ol,.help ul{margin:2px 0 6px;padding-left:1.3em}.help li{margin:6px 0}.help code{background:var(--line);border-radius:6px;padding:1px 6px;font-size:.88em}
+.off{position:absolute;top:6px;right:6px;background:#E11D48;color:#fff;border-radius:6px;padding:1px 7px;font-size:.74rem;font-weight:900;line-height:1.5;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+.was{color:#9A8C7A;text-decoration:line-through;margin-right:4px}.nowp{color:#E11D48;font-weight:800}
+.board{margin:0 0 12px;background:#2A1A3F;color:#fff;border-radius:16px;border:3px solid #3B2A1A;box-shadow:0 3px 0 #3B2A1A;overflow:hidden}
+.board .bulb{height:8px;background:radial-gradient(circle,#FFD24A 40%,transparent 45%) 0 0/16px 8px repeat-x}
+.board .bin{padding:8px 14px 10px}.board .bhead{display:inline-block;background:#E11D48;color:#fff;font-weight:900;letter-spacing:2px;border-radius:6px;padding:1px 10px;font-size:.8rem;margin-bottom:4px}
+.board .brow{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:5px 0;border-top:1px dashed rgba(255,255,255,.25)}.board .brow:first-of-type{border-top:0}
+.board .bd{color:#FFD24A;font-weight:700}.board .bn{font-weight:900;font-size:1.05rem}.board .bi{color:#E9DFFB}.board .bo{background:#FFD24A;color:#2A1A3F;font-weight:900;border-radius:8px;padding:0 9px}
+.qty{display:flex;gap:6px;align-items:center;justify-content:center;margin:6px 0 2px}.qty .qn{min-width:2.2em;text-align:center;font-weight:700;font-size:1.05rem}.qty button{flex:0 0 44px;min-width:0;min-height:40px;padding:0;font-size:1.2rem;border-radius:10px;border:2px solid var(--line,#E8D5B8);background:#fff;font-weight:700;cursor:pointer}.qty button:disabled{opacity:.4;cursor:default}
+.ltdl{color:#C2410C;font-size:.82rem;margin:2px 0}
+.th svg{height:110px}
+.sc{border-radius:12px;overflow:hidden}
+.grid4{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.item{display:flex;flex-direction:column;gap:6px;margin:0}.item button{width:100%;padding:0 8px}
+.item .row{margin:0}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:12px;align-items:start}
+.two .card{margin:0}
+.bar{height:12px;border-radius:6px;background:var(--line);overflow:hidden;margin:6px 0}.bar i{display:block;height:100%;background:var(--pri);transition:width .4s}
+.foods{display:flex;flex-wrap:wrap;gap:8px}.foods button{display:flex;align-items:center;gap:6px;padding:4px 14px 4px 4px}.foods svg{width:48px;height:40px;background:#FFF3DC;border-radius:8px}
+.banner{background:var(--pri);color:#fff;border-radius:12px;padding:10px 14px;margin-bottom:12px;font-weight:700;text-align:center;animation:pop .5s}
+h3.sec{font-size:1rem;margin:18px 0 8px}
+.tabs.sub button{min-height:38px}
+@keyframes pop{0%{transform:scale(.8);opacity:0}100%{transform:none;opacity:1}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+@keyframes hop{0%,100%{transform:translateY(0)}30%{transform:translateY(-16px)}60%{transform:translateY(0)}80%{transform:translateY(-6px)}}
+.bob{animation:bob 2.4s ease-in-out infinite}.hop{animation:hop .6s ease 2}
+@media(prefers-reduced-motion:reduce){.bob,.hop,.banner{animation:none}}
+#loading{position:fixed;inset:0;background:rgba(60,60,60,.45);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#fff;font-weight:700;z-index:100;touch-action:none}
+#loading.on{display:flex}
+.spin{width:44px;height:44px;border:5px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.spin{animation-duration:2.4s}}
+@media(min-width:700px){.wrap{padding:20px 24px 60px}h1{font-size:1.5rem}}
+.pickgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:10px}
+.pick{flex-direction:column;height:auto;padding:8px;gap:4px;border:2px solid var(--line);white-space:normal}
+.pick.on{border-color:var(--pri);background:#FFF3DC;color:#3B2A1A;font-weight:700}
+.pick .th{width:100%;margin:0}.pick .th svg{height:84px}
+.grow{display:flex;gap:4px;margin:6px 0 14px}.grow>div{flex:1;min-width:0;text-align:center;font-size:.7rem;color:var(--sub);line-height:1.3}.grow svg{display:block;width:100%;height:auto;background:#FFF3DC;border-radius:8px}
+</style>
+</head>
+<body>
+<div class="wrap"><header id="hd"></header><main id="app"><div class="empty">載入中…</div></main></div>
+<div id="toast"></div>
+<div id="loading" role="status" aria-live="polite"><div class="spin"></div><div>載入中…</div></div>
+
+<!-- 前端設定：後端網址寫在 config.js -->
+<script src="config.js"></script>
+<script>
+  const APP = window.APP_CONFIG || {};
+  const API_URL = String(APP.API_URL || '').trim();
+  const CFG = {
+    showCreateFamily: String(APP.showCreateFamily === undefined ? 'false' : APP.showCreateFamily),   // 開啟後會再向後端 Settings 的 showCreateFamily 確認
+    familyCode: String(new URLSearchParams(location.search).get('fc') || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 12)
+  };
+</script>
+
+<script>
+/* ===== 繪圖模組（支援多種動物與 5 階段） ===== */
+const ICON={
+ cat:'<path d="M3.5 10.5 L4.8 3.4 L10 6.6 Z M20.5 10.5 L19.2 3.4 L14 6.6 Z" fill="#FFE3B0" stroke="#3B2A1A" stroke-width="1.6"/><ellipse cx="12" cy="13.6" rx="9" ry="7.6" fill="#FFE3B0" stroke="#3B2A1A" stroke-width="1.6"/><circle cx="8.8" cy="12.8" r="1.2" fill="#3B2A1A" stroke="none"/><circle cx="15.2" cy="12.8" r="1.2" fill="#3B2A1A" stroke="none"/><polygon points="10.8,15.2 13.2,15.2 12,16.6" fill="#D4537E" stroke="none"/><path d="M12 16.6v.8M9.8 18c.9.7 3.5.7 4.4 0" stroke="#3B2A1A" stroke-width="1" fill="none"/>',
+ task:'<rect x="5" y="4" width="14" height="17" rx="2.5"/><path d="M9 4h6v3H9z"/><path d="M8.5 12h7M8.5 16h5"/>',
+ cart:'<circle cx="9" cy="20" r="1.6"/><circle cx="18" cy="20" r="1.6"/><path d="M2.5 3.5h3l2.3 11h10.9l2-8.2H6.3"/>',
+ bag:'<path d="M8.5 7V6a3.5 3.5 0 0 1 7 0v1"/><rect x="5" y="7" width="14" height="14" rx="4.5"/><path d="M9 14h6v4H9z"/>',
+ coin:'<circle cx="12" cy="12" r="9.5" fill="#FAC775" stroke="#BA7517" stroke-width="1.6"/><circle cx="12" cy="12" r="6" fill="none" stroke="#BA7517" stroke-width="1.2"/><rect x="11" y="8.2" width="2" height="7.6" rx="1" fill="#BA7517" stroke="none"/>',
+ star:'<path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z" fill="#FAC775" stroke="#BA7517" stroke-width="1.4"/>',
+ lock:'<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+ left:'<path d="M15 5l-7 7 7 7"/>',
+ right:'<path d="M9 5l7 7-7 7"/>',
+ help:'<circle cx="12" cy="12" r="9.5"/><path d="M9.4 9.4a2.7 2.7 0 1 1 3.9 2.4c-.9.5-1.3 1.1-1.3 2.1"/><circle cx="12" cy="17.4" r=".7" fill="currentColor"/>',
+ key:'<circle cx="8" cy="15.5" r="4"/><path d="M11 12.5l8.5-8.5M16 7.5l3 3M14 9.5l2 2"/>',
+ phone:'<rect x="6.5" y="2.5" width="11" height="19" rx="2.8"/><path d="M10.5 18.3h3"/>',
+ refresh:'<path d="M20 11.5A8 8 0 1 0 17.7 17"/><path d="M20.5 4v7.5H13"/>'
+};
+function ic(n,s){s=s||20;return '<svg class="ic" width="'+s+'" height="'+s+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ICON[n]+'</svg>'}
+const LV_SCALE={1:[.7,.7],2:[.95,.92],3:[1.23,1.15],4:[1.54,1.4],5:[1.89,1.61],6:[1.89,1.61],7:[1.89,1.61],8:[1.89,1.61],9:[1.89,1.61],10:[1.89,1.61]};
+const NOSE='<polygon points="-3.5,-1 3.5,-1 0,3.5" fill="#E56B6B"/>';
+const EYE='<circle cx="-14" cy="-8" r="4.5" fill="#3B2A1A"/><circle cx="14" cy="-8" r="4.5" fill="#3B2A1A"/><circle cx="-12.8" cy="-9.4" r="1.5" fill="#fff"/><circle cx="15.2" cy="-9.4" r="1.5" fill="#fff"/>';
+const EYEB='<circle cx="-14" cy="-8" r="5.5" fill="#3B2A1A"/><circle cx="14" cy="-8" r="5.5" fill="#3B2A1A"/><circle cx="-12.5" cy="-10" r="2" fill="#fff"/><circle cx="15.5" cy="-10" r="2" fill="#fff"/>';
+const ARC='stroke="#3B2A1A" stroke-width="3" fill="none" stroke-linecap="round"';
+const BROW='stroke="#3B2A1A" stroke-width="2" stroke-linecap="round"';
+const MOUTH='stroke="#6B3E1E" stroke-width="1.5" fill="none" stroke-linecap="round"';
+
+const BODY='<path d="M30 10 Q62 2 56 -26" stroke="#E8922A" stroke-width="9" fill="none" stroke-linecap="round"/><ellipse cx="-18" cy="32" rx="10" ry="6" fill="#E8922A"/><ellipse cx="18" cy="32" rx="10" ry="6" fill="#E8922A"/><ellipse cx="0" cy="0" rx="40" ry="34" fill="#F4A340"/><ellipse cx="0" cy="11" rx="24" ry="18" fill="#FBE3B8"/><polygon points="-35,-16 -31,-50 -9,-30" fill="#F4A340"/><polygon points="35,-16 31,-50 9,-30" fill="#F4A340"/><polygon points="-29,-24 -28,-41 -17,-30" fill="#F4A8A8"/><polygon points="29,-24 28,-41 17,-30" fill="#F4A8A8"/><ellipse cx="-25" cy="3" rx="5" ry="3" fill="#F28B82" opacity=".6"/><ellipse cx="25" cy="3" rx="5" ry="3" fill="#F28B82" opacity=".6"/>';
+
+const FACE={
+ normal:EYE+NOSE+'<path d="M-6 7 Q-3 11 0 5 Q3 11 6 7" '+MOUTH+'/>',
+ happy:'<path d="M-19 -6 Q-14 -14 -9 -6" '+ARC+'/><path d="M9 -6 Q14 -14 19 -6" '+ARC+'/>'+NOSE+'<path d="M-8 5 Q0 20 8 5 Z" fill="#A32D2D"/><ellipse cx="0" cy="11" rx="4" ry="2.5" fill="#F28B82"/>',
+ hungry:EYEB+NOSE+'<ellipse cx="0" cy="10" rx="4" ry="3" fill="#A32D2D"/><path d="M6 12 Q8 17 6 19 Q4 17 6 12 Z" fill="#7ABFEA"/><path d="M-14 25 q3 -4 6 0 t6 0 t6 0" stroke="#B8793A" stroke-width="1.5" fill="none" stroke-linecap="round"/>',
+ eating:'<ellipse cx="-26" cy="4" rx="7" ry="5" fill="#F28B82" opacity=".7"/><ellipse cx="26" cy="4" rx="7" ry="5" fill="#F28B82" opacity=".7"/><path d="M-19 -6 Q-14 -14 -9 -6" '+ARC+'/><path d="M9 -6 Q14 -14 19 -6" '+ARC+'/>'+NOSE+'<ellipse cx="0" cy="10" rx="7" ry="5" fill="#A32D2D"/><circle cx="-2" cy="14" r="5.5" fill="#8B5A2B"/><circle cx="11" cy="21" r="1.6" fill="#8B5A2B"/><circle cx="-13" cy="21" r="1.6" fill="#8B5A2B"/>',
+ sleepy:'<path d="M-19 -8 Q-14 -3 -9 -8" '+ARC+'/><path d="M9 -8 Q14 -3 19 -8" '+ARC+'/>'+NOSE+'<circle cx="0" cy="9" r="2.2" fill="#A32D2D"/><text x="34" y="-30" font-size="16" font-weight="700" fill="#7F77DD">Z</text><text x="46" y="-44" font-size="12" font-weight="700" fill="#7F77DD">z</text>',
+ sad:EYEB+'<path d="M-21 -14 L-9 -19" '+BROW+'/><path d="M21 -14 L9 -19" '+BROW+'/>'+NOSE+'<path d="M-6 11 Q0 4 6 11" '+MOUTH+'/><path d="M-17 0 Q-15 6 -17 9 Q-19 6 -17 0 Z" fill="#7ABFEA"/>'
+};
+
+const CAPE_BACK='<path d="M-24 12 L-44 44 L44 44 L24 12 Z" fill="#D4537E"/>';
+const ACC={
+ party_hat:'<polygon points="-14,-32 14,-32 0,-72" fill="#7F77DD"/><circle cx="0" cy="-74" r="4.5" fill="#FAC775"/><circle cx="-6" cy="-46" r="2.5" fill="#FAC775"/><circle cx="5" cy="-56" r="2.5" fill="#FAC775"/>',
+ crown:'<path d="M-17 -30 L-20 -54 L-9 -43 L0 -58 L9 -43 L20 -54 L17 -30 Z" fill="#FAC775" stroke="#BA7517" stroke-width="1.5" stroke-linejoin="round"/><circle cx="0" cy="-37" r="3" fill="#E24B4A"/><circle cx="-9" cy="-35" r="2" fill="#378ADD"/><circle cx="9" cy="-35" r="2" fill="#378ADD"/>',
+ straw_hat:'<path d="M-17 -30 Q-17 -54 0 -54 Q17 -54 17 -30 Z" fill="#F0D084"/><ellipse cx="0" cy="-30" rx="32" ry="7" fill="#E8C26A"/><path d="M-17 -33 Q0 -28 17 -33 L17 -38 Q0 -33 -17 -38 Z" fill="#E24B4A"/>',
+ bow:'<polygon points="0,22 -12,14 -12,30" fill="#E24B4A"/><polygon points="0,22 12,14 12,30" fill="#E24B4A"/><circle cx="0" cy="22" r="4" fill="#A32D2D"/>',
+ bell_collar:'<path d="M-24 17 Q0 28 24 17" stroke="#E24B4A" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="0" cy="27" r="6" fill="#FAC775" stroke="#BA7517" stroke-width="1.5"/><line x1="-3" y1="29" x2="3" y2="29" stroke="#BA7517" stroke-width="1.5"/>',
+ scarf:'<path d="M-27 19 Q0 30 27 19 L27 27 Q0 38 -27 27 Z" fill="#3A8FD9"/><path d="M12 29 L18 46 L28 43 L22 26 Z" fill="#2B6DAE"/>',
+ round_glasses:'<circle cx="-14" cy="-8" r="10" fill="#fff" fill-opacity=".3" stroke="#3B2A1A" stroke-width="2.5"/><circle cx="14" cy="-8" r="10" fill="#fff" fill-opacity=".3" stroke="#3B2A1A" stroke-width="2.5"/><path d="M-4 -8 L4 -8" stroke="#3B2A1A" stroke-width="2.5"/>',
+ sunglasses:'<ellipse cx="-14" cy="-8" rx="11" ry="8" fill="#2C2C2A"/><ellipse cx="14" cy="-8" rx="11" ry="8" fill="#2C2C2A"/><path d="M-3 -9 L3 -9" stroke="#2C2C2A" stroke-width="3"/><path d="M-19 -11 L-13 -11" stroke="#fff" stroke-width="1.5" opacity=".5" stroke-linecap="round"/><path d="M9 -11 L15 -11" stroke="#fff" stroke-width="1.5" opacity=".5" stroke-linecap="round"/>',
+ cape:'<path d="M-24 16 Q0 26 24 16" stroke="#993556" stroke-width="4" fill="none" stroke-linecap="round"/><circle cx="0" cy="23" r="4.5" fill="#FAC775" stroke="#BA7517" stroke-width="1.5"/>'
+};
+
+/* 各動物專屬繪圖：全部共用同一組表情(FACE)與配件(ACC)座標，所以每種動物都有 6 種表情、9 種服裝 */
+const WRINKLES='<g stroke="#3B2A1A" stroke-opacity=".42" stroke-width="1.3" fill="none" stroke-linecap="round">'+
+ '<path d="M-14 -22 Q-7 -24.5 0 -22 Q7 -24.5 14 -22"/><path d="M-10 -27 Q0 -29.5 10 -27"/><path d="M-6 -32 Q0 -34 6 -32"/>'+
+ '<path d="M-23 -9 L-27 -12 M-23 -6 L-28 -6"/><path d="M23 -9 L27 -12 M23 -6 L28 -6"/>'+
+ '<path d="M-20 -1 Q-14 3 -8 -1 M-17 3 Q-14 5 -11 3"/><path d="M8 -1 Q14 3 20 -1 M11 3 Q14 5 17 3"/></g>';
+function wrapPet(o,back,body,front,noNose){
+  const s=o.flat?[1,1]:(LV_SCALE[o.level]||LV_SCALE[1]),acc=o.acc||[];
+  let face=FACE[o.mood]||FACE.normal;if(noNose)face=face.split(NOSE).join('');
+  return '<g transform="scale('+s[0]+','+s[1]+')">'+(acc.indexOf('cape')>=0?CAPE_BACK:'')+back+body+face+(front||'')+((!o.flat&&(o.level||1)>=10)?WRINKLES:'')+acc.map(function(k){return ACC[k]||''}).join('')+'</g>';
+}
+function petCat(o){return wrapPet(o,'',BODY)}
+
+function petRaccoon(o){
+  const back='<path d="M30 12 Q66 6 60 -24" stroke="#8E8E8E" stroke-width="14" fill="none" stroke-linecap="round"/>'+
+    '<path d="M30 12 Q66 6 60 -24" stroke="#3A3A3A" stroke-width="14" fill="none" stroke-dasharray="5 10"/>'+
+    '<circle cx="60" cy="-24" r="7" fill="#3A3A3A"/>'+
+    '<ellipse cx="-18" cy="32" rx="10" ry="6" fill="#5A5A5A"/><ellipse cx="18" cy="32" rx="10" ry="6" fill="#5A5A5A"/>';
+  const body='<circle cx="-27" cy="-28" r="11" fill="#7A7A7A"/><circle cx="27" cy="-28" r="11" fill="#7A7A7A"/><circle cx="-27" cy="-28" r="6" fill="#E8B4B4"/><circle cx="27" cy="-28" r="6" fill="#E8B4B4"/>'+
+    '<ellipse cx="0" cy="0" rx="40" ry="34" fill="#A0A0A0"/><ellipse cx="0" cy="11" rx="24" ry="18" fill="#E6E6E6"/><ellipse cx="0" cy="8" rx="15" ry="12" fill="#F4F4F4"/>'+
+    '<ellipse cx="0" cy="-25" rx="4" ry="9" fill="#F4F4F4"/>'+
+    '<path d="M-30 -8 Q-14 -22 0 -12 Q14 -22 30 -8 Q26 4 14 3 Q0 -4 -14 3 Q-26 4 -30 -8 Z" fill="#3A3A3A"/>'+
+    '<circle cx="-14" cy="-8" r="7.5" fill="#fff"/><circle cx="14" cy="-8" r="7.5" fill="#fff"/>'+
+    '<ellipse cx="-25" cy="5" rx="5" ry="3" fill="#F28B82" opacity=".5"/><ellipse cx="25" cy="5" rx="5" ry="3" fill="#F28B82" opacity=".5"/>';
+  return wrapPet(o,back,body);
+}
+
+function petGuineaPig(o){
+  const lv=o.level||1;
+  const back='<ellipse cx="-18" cy="32" rx="10" ry="6" fill="#E8B58A"/><ellipse cx="18" cy="32" rx="10" ry="6" fill="#E8B58A"/>';
+  const body='<ellipse cx="-34" cy="-18" rx="9" ry="13" transform="rotate(-30 -34 -18)" fill="#B8703A"/><ellipse cx="-34" cy="-18" rx="5" ry="8" transform="rotate(-30 -34 -18)" fill="#F4A8A8"/>'+
+    '<ellipse cx="34" cy="-18" rx="9" ry="13" transform="rotate(30 34 -18)" fill="#B8703A"/><ellipse cx="34" cy="-18" rx="5" ry="8" transform="rotate(30 34 -18)" fill="#F4A8A8"/>'+
+    '<ellipse cx="0" cy="0" rx="42" ry="34" fill="#C98A4B"/>'+
+    '<ellipse cx="-31" cy="-14" rx="10" ry="10" fill="#8F5A2A"/><ellipse cx="31" cy="12" rx="9" ry="8" fill="#8F5A2A"/>'+
+    '<ellipse cx="0" cy="13" rx="25" ry="17" fill="#F6DDB5"/>'+
+    '<path d="M-7 -33 Q0 -29 7 -33 L9 -2 Q0 4 -9 -2 Z" fill="#FFF1DC"/>'+
+    '<ellipse cx="-25" cy="3" rx="5" ry="3" fill="#F28B82" opacity=".6"/><ellipse cx="25" cy="3" rx="5" ry="3" fill="#F28B82" opacity=".6"/>'+
+    (lv>=3?'<path d="M-9 -33 Q-5 -46 0 -35 Q5 -48 9 -33" stroke="#8F5A2A" stroke-width="4" fill="none" stroke-linecap="round"/>':'');
+  return wrapPet(o,back,body);
+}
+
+function petLion(o){
+  const lv=Math.min(o.level||1,5),mr=38+lv*3,d=mr-8,mc=['#C98A3A','#B7712A','#A55E1F','#8F4A16','#7A3A10'][lv-1]||'#B7712A';
+  let mane='<ellipse cx="0" cy="-4" rx="'+(mr-6)+'" ry="'+((mr-6)*.8).toFixed(1)+'" fill="'+mc+'"/>';
+  for(let i=0;i<12;i++){const t=i*Math.PI/6;mane+='<circle cx="'+(Math.cos(t)*d).toFixed(1)+'" cy="'+(Math.sin(t)*d*.8-4).toFixed(1)+'" r="10" fill="'+mc+'"/>'}
+  const back='<path d="M30 12 Q62 8 58 -20" stroke="#E8A93E" stroke-width="7" fill="none" stroke-linecap="round"/><ellipse cx="58" cy="-25" rx="7" ry="10" fill="#8F4A16"/>'+
+    '<ellipse cx="-18" cy="32" rx="10" ry="6" fill="#E8A93E"/><ellipse cx="18" cy="32" rx="10" ry="6" fill="#E8A93E"/>';
+  const body=mane+
+    '<circle cx="-27" cy="-30" r="9" fill="#F2B24A"/><circle cx="27" cy="-30" r="9" fill="#F2B24A"/><circle cx="-27" cy="-30" r="5" fill="#F4A8A8"/><circle cx="27" cy="-30" r="5" fill="#F4A8A8"/>'+
+    '<ellipse cx="0" cy="0" rx="37" ry="32" fill="#F2B24A"/><ellipse cx="0" cy="9" rx="17" ry="13" fill="#FCE3B0"/>'+
+    '<ellipse cx="-25" cy="4" rx="5" ry="3" fill="#F28B82" opacity=".55"/><ellipse cx="25" cy="4" rx="5" ry="3" fill="#F28B82" opacity=".55"/>';
+  return wrapPet(o,back,body);
+}
+
+function petParrot(o){
+  const back='<path d="M24 22 Q56 20 70 34 Q46 38 22 32 Z" fill="#2E9B6A"/><path d="M24 28 Q50 30 64 42 Q40 44 20 36 Z" fill="#2F7FD0"/>'+
+    '<ellipse cx="-16" cy="38" rx="9" ry="5" fill="#F29A2E"/><ellipse cx="16" cy="38" rx="9" ry="5" fill="#F29A2E"/>';
+  const body='<ellipse cx="0" cy="16" rx="37" ry="26" fill="#4CB86E"/><ellipse cx="0" cy="24" rx="20" ry="16" fill="#A6D86B"/>'+
+    '<ellipse cx="-34" cy="18" rx="8" ry="17" transform="rotate(8 -34 18)" fill="#2E9B6A"/><ellipse cx="34" cy="18" rx="8" ry="17" transform="rotate(-8 34 18)" fill="#2E9B6A"/>'+
+    '<path d="M-9 -34 Q-11 -50 -3 -42 Q0 -56 3 -42 Q11 -50 9 -34 Z" fill="#E8741F"/>'+
+    '<ellipse cx="0" cy="-9" rx="35" ry="29" fill="#F5922E"/>'+
+    '<circle cx="-14" cy="-8" r="8" fill="#FFF3DC"/><circle cx="14" cy="-8" r="8" fill="#FFF3DC"/>'+
+    '<ellipse cx="-26" cy="5" rx="5" ry="3" fill="#F28B82" opacity=".6"/><ellipse cx="26" cy="5" rx="5" ry="3" fill="#F28B82" opacity=".6"/>';
+  const front='<path d="M-8 -2 Q0 -9 8 -2 Q7 6 0 10 Q-7 6 -8 -2 Z" fill="#FFD35C" stroke="#C9961E" stroke-width="1.5" stroke-linejoin="round"/><path d="M-4 1 Q0 -1 4 1" stroke="#C9961E" stroke-width="1.3" fill="none" stroke-linecap="round"/>';
+  return wrapPet(o,back,body,front,true);
+}
+
+function petKoala(o){
+  const back='<ellipse cx="-18" cy="32" rx="10" ry="6" fill="#7C848C"/><ellipse cx="18" cy="32" rx="10" ry="6" fill="#7C848C"/>';
+  const body='<circle cx="-35" cy="-22" r="16" fill="#9AA3AB"/><circle cx="35" cy="-22" r="16" fill="#9AA3AB"/><circle cx="-35" cy="-22" r="10" fill="#F0E4E8"/><circle cx="35" cy="-22" r="10" fill="#F0E4E8"/>'+
+    '<ellipse cx="0" cy="0" rx="40" ry="34" fill="#9AA3AB"/><ellipse cx="0" cy="12" rx="24" ry="18" fill="#E3E6E8"/>'+
+    '<ellipse cx="-29" cy="9" rx="9" ry="8" fill="#D5D9DC"/><ellipse cx="29" cy="9" rx="9" ry="8" fill="#D5D9DC"/>'+
+    '<ellipse cx="-25" cy="5" rx="5" ry="3" fill="#F28B82" opacity=".5"/><ellipse cx="25" cy="5" rx="5" ry="3" fill="#F28B82" opacity=".5"/>';
+  const front='<ellipse cx="0" cy="0" rx="7.5" ry="9" fill="#3B3B3F"/><ellipse cx="-2.5" cy="-3.5" rx="2" ry="2.6" fill="#fff" opacity=".45"/>';
+  return wrapPet(o,back,body,front,true);
+}
+
+function pet(o){
+  const t=o.type||'cat';
+  if(t==='parrot')return petParrot(o);
+  if(t==='koala')return petKoala(o);
+  if(t==='raccoon')return petRaccoon(o);
+  if(t==='guinea_pig')return petGuineaPig(o);
+  if(t==='lion')return petLion(o);
+  return petCat(o);
+}
+
+const FOOD={
+ food_basic:'<path d="M-24 -18 H24 L18 0 H-18 Z" fill="#C4622D"/><ellipse cx="0" cy="-18" rx="24" ry="5" fill="#D9743A"/><circle cx="-10" cy="-24" r="4" fill="#8B5A2B"/><circle cx="0" cy="-28" r="4" fill="#8B5A2B"/><circle cx="10" cy="-24" r="4" fill="#8B5A2B"/><circle cx="-4" cy="-22" r="4" fill="#A66A38"/><circle cx="6" cy="-21" r="4" fill="#A66A38"/>',
+ food_fish:'<ellipse cx="0" cy="-30" rx="22" ry="12" fill="#7FB6D9"/><polygon points="20,-30 36,-42 36,-18" fill="#5B9BC4"/><circle cx="-12" cy="-33" r="2.5" fill="#3B2A1A"/><path d="M-2 -40 Q2 -30 -2 -20" stroke="#5B9BC4" stroke-width="2" fill="none"/><path d="M8 -38 Q12 -30 8 -22" stroke="#5B9BC4" stroke-width="2" fill="none"/>',
+ food_can:'<rect x="-18" y="-46" width="36" height="42" rx="4" fill="#E8922A"/><rect x="-18" y="-34" width="36" height="14" fill="#FFF3DC"/><ellipse cx="0" cy="-46" rx="18" ry="4" fill="#C9C9C9"/><ellipse cx="0" cy="-4" rx="18" ry="3" fill="#C97A1E"/><ellipse cx="0" cy="-27" rx="7" ry="3.5" fill="#7FB6D9"/><polygon points="6,-27 12,-31 12,-23" fill="#5B9BC4"/>'
+};
+
+const SH=function(r){return '<ellipse cx="0" cy="0" rx="'+r+'" ry="4" fill="#000" opacity=".08"/>'};
+const FUR={
+ wood_chair:SH(24)+'<rect x="-16" y="-24" width="5" height="24" fill="#8B5A2B"/><rect x="11" y="-24" width="5" height="24" fill="#8B5A2B"/><rect x="-16" y="-62" width="6" height="34" fill="#C48B55"/><rect x="10" y="-62" width="6" height="34" fill="#C48B55"/><rect x="-16" y="-66" width="32" height="8" rx="2" fill="#C48B55"/><rect x="-18" y="-30" width="36" height="7" rx="2" fill="#B07A4A"/>',
+ armchair_pink:SH(30)+'<rect x="-24" y="-10" width="6" height="10" fill="#8B5A2B"/><rect x="18" y="-10" width="6" height="10" fill="#8B5A2B"/><rect x="-24" y="-64" width="48" height="44" rx="12" fill="#D4537E"/><rect x="-31" y="-44" width="13" height="32" rx="6" fill="#B93F69"/><rect x="18" y="-44" width="13" height="32" rx="6" fill="#B93F69"/><rect x="-19" y="-34" width="38" height="20" rx="5" fill="#E58AA8"/>',
+ plant:SH(22)+'<path d="M0 -26 Q-18 -44 -10 -62 Q6 -48 0 -26 Z" fill="#3F9E58"/><path d="M0 -26 Q18 -48 10 -66 Q-4 -50 0 -26 Z" fill="#52B36B"/><path d="M0 -26 Q-30 -34 -28 -52 Q-8 -46 0 -26 Z" fill="#2F8647"/><path d="M0 -26 Q30 -34 28 -52 Q8 -46 0 -26 Z" fill="#2F8647"/><path d="M-14 -22 H14 L10 0 H-10 Z" fill="#C4622D"/><rect x="-16" y="-26" width="32" height="6" rx="2" fill="#D9743A"/>',
+ lamp:SH(18)+'<ellipse cx="0" cy="-3" rx="14" ry="3" fill="#555"/><rect x="-2" y="-48" width="4" height="45" fill="#888"/><polygon points="-18,-48 18,-48 12,-72 -12,-72" fill="#F5C94C"/><ellipse cx="0" cy="-48" rx="18" ry="3" fill="#E0A82E"/>',
+ bookshelf:SH(30)+'<rect x="-26" y="-64" width="52" height="64" fill="#B07A4A"/><rect x="-22" y="-60" width="44" height="26" fill="#8B5A2B"/><rect x="-22" y="-30" width="44" height="26" fill="#8B5A2B"/><rect x="-20" y="-56" width="7" height="22" fill="#E24B4A"/><rect x="-12" y="-54" width="6" height="20" fill="#378ADD"/><rect x="-5" y="-57" width="8" height="23" fill="#FAC775"/><rect x="4" y="-55" width="6" height="21" fill="#4E9F6E"/><rect x="-20" y="-26" width="9" height="22" fill="#7F77DD"/><rect x="-10" y="-24" width="6" height="20" fill="#D4537E"/><circle cx="12" cy="-11" r="6" fill="#3F9E58"/>',
+ fish_tank:SH(36)+'<rect x="-34" y="-6" width="68" height="6" fill="#8B5A2B"/><rect x="-30" y="-48" width="60" height="42" rx="4" fill="#7FC8EE" fill-opacity=".6" stroke="#5B8DD9" stroke-width="2"/><rect x="-28" y="-14" width="56" height="8" fill="#E8D3A0"/><ellipse cx="-8" cy="-30" rx="7" ry="4" fill="#F4A340"/><polygon points="-15,-30 -21,-35 -21,-25" fill="#F4A340"/><path d="M16 -14 Q10 -26 18 -38" stroke="#3F9E58" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="4" cy="-40" r="2" fill="#fff" opacity=".8"/><circle cx="8" cy="-34" r="1.5" fill="#fff" opacity=".8"/>',
+ beanbag:SH(34)+'<path d="M-32 0 Q-38 -24 -16 -36 Q0 -42 16 -36 Q38 -24 32 0 Z" fill="#E8744F"/><path d="M-22 -26 Q-10 -36 4 -34" stroke="#F4A58A" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M0 -40 Q-2 -20 2 0" stroke="#C4552F" stroke-width="2" fill="none"/><path d="M-30 -8 Q0 4 30 -8" stroke="#C4552F" stroke-width="2" fill="none"/>',
+ sofa_blue:SH(34)+'<rect x="-24" y="-8" width="6" height="8" fill="#6B4A2B"/><rect x="18" y="-8" width="6" height="8" fill="#6B4A2B"/><rect x="-26" y="-58" width="52" height="36" rx="10" fill="#3A8FD9"/><rect x="-34" y="-36" width="14" height="30" rx="6" fill="#2B6DAE"/><rect x="20" y="-36" width="14" height="30" rx="6" fill="#2B6DAE"/><rect x="-21" y="-30" width="42" height="22" rx="5" fill="#6FB3EE"/><path d="M0 -29 V-9" stroke="#3A8FD9" stroke-width="1.5"/>',
+ sofa_green:SH(46)+'<rect x="-40" y="-8" width="6" height="8" fill="#6B4A2B"/><rect x="34" y="-8" width="6" height="8" fill="#6B4A2B"/><rect x="-42" y="-58" width="84" height="36" rx="10" fill="#3F9E58"/><rect x="-50" y="-36" width="14" height="30" rx="6" fill="#2F7E44"/><rect x="36" y="-36" width="14" height="30" rx="6" fill="#2F7E44"/><rect x="-37" y="-30" width="36" height="22" rx="5" fill="#6CC785"/><rect x="1" y="-30" width="36" height="22" rx="5" fill="#6CC785"/><rect x="-30" y="-50" width="14" height="14" rx="4" fill="#FAC775"/>',
+ sofa_leather:SH(50)+'<rect x="-44" y="-8" width="7" height="8" fill="#3B2412"/><rect x="37" y="-8" width="7" height="8" fill="#3B2412"/><rect x="-46" y="-62" width="92" height="40" rx="12" fill="#8B4A2B"/><rect x="-54" y="-38" width="15" height="32" rx="7" fill="#6B3419"/><rect x="39" y="-38" width="15" height="32" rx="7" fill="#6B3419"/><rect x="-40" y="-32" width="80" height="24" rx="6" fill="#A8603A"/><path d="M-12 -32 V-8 M12 -32 V-8" stroke="#8B4A2B" stroke-width="1.5"/><circle cx="-30" cy="-50" r="2" fill="#D9A27A"/><circle cx="-10" cy="-50" r="2" fill="#D9A27A"/><circle cx="10" cy="-50" r="2" fill="#D9A27A"/><circle cx="30" cy="-50" r="2" fill="#D9A27A"/>',
+ round_rug:'<ellipse cx="0" cy="-3" rx="40" ry="10" fill="#D4537E"/><ellipse cx="0" cy="-3" rx="31" ry="7.5" fill="#F4A8C0"/><ellipse cx="0" cy="-3" rx="21" ry="5" fill="#D4537E"/><ellipse cx="0" cy="-3" rx="11" ry="2.6" fill="#FBE3EC"/>',
+ xmas_tree:SH(24)+'<rect x="-5" y="-12" width="10" height="12" fill="#8B5A2B"/><polygon points="0,-72 -22,-40 22,-40" fill="#2E8B4F"/><polygon points="0,-58 -28,-24 28,-24" fill="#37A15D"/><polygon points="0,-42 -34,-10 34,-10" fill="#2E8B4F"/><path d="M0 -84 l3 7 8 1 -6 5 2 8 -7 -4 -7 4 2 -8 -6 -5 8 -1z" fill="#FAC775" stroke="#BA7517" stroke-width="1"/><circle cx="-8" cy="-34" r="3.2" fill="#E24B4A"/><circle cx="10" cy="-46" r="3.2" fill="#378ADD"/><circle cx="-14" cy="-18" r="3.2" fill="#FAC775"/><circle cx="14" cy="-20" r="3.2" fill="#E24B4A"/><circle cx="0" cy="-26" r="3.2" fill="#7F77DD"/>'
+};
+
+const BG={
+ bg_none:'<rect width="360" height="240" fill="#FFF3DC"/><rect y="150" width="360" height="90" fill="#EBD9B4"/><rect y="146" width="360" height="5" fill="#D8C393"/>',
+ bg_room:'<rect width="360" height="240" fill="#F6E7D0"/><rect y="150" width="360" height="90" fill="#C9966A"/><rect y="145" width="360" height="6" fill="#A87548"/><path d="M0 185H360M0 220H360" stroke="#B5835A" stroke-width="2"/><rect x="36" y="30" width="86" height="76" fill="#BFE3F5" stroke="#8B6B4A" stroke-width="4"/><path d="M79 30V106M36 68H122" stroke="#8B6B4A" stroke-width="4"/><rect x="26" y="24" width="14" height="88" fill="#E8A0A0"/><rect x="118" y="24" width="14" height="88" fill="#E8A0A0"/><rect x="244" y="36" width="70" height="52" fill="#fff" stroke="#8B6B4A" stroke-width="4"/><polygon points="250,82 270,56 284,72 294,60 308,82" fill="#7FB77E"/><circle cx="296" cy="48" r="6" fill="#F5C94C"/>',
+ bg_outdoor:'<rect width="360" height="240" fill="#A9D8F5"/><circle cx="312" cy="40" r="20" fill="#F8D55B"/><ellipse cx="80" cy="52" rx="30" ry="10" fill="#fff"/><ellipse cx="98" cy="44" rx="20" ry="11" fill="#fff"/><ellipse cx="210" cy="72" rx="26" ry="9" fill="#fff"/><ellipse cx="224" cy="66" rx="17" ry="10" fill="#fff"/><path d="M0 130 Q80 90 170 125 Q260 100 360 128 V240 H0 Z" fill="#7DBE6A"/><path d="M0 150 Q180 130 360 150 V240 H0 Z" fill="#5FA84F"/><rect x="40" y="100" width="12" height="52" fill="#8B5A2B"/><circle cx="46" cy="86" r="34" fill="#3F8F3F"/><circle cx="90" cy="180" r="3" fill="#E24B4A"/><circle cx="140" cy="228" r="3" fill="#fff"/><circle cx="230" cy="170" r="3" fill="#F8D55B"/><circle cx="300" cy="222" r="3" fill="#E24B4A"/><circle cx="330" cy="176" r="3" fill="#fff"/><circle cx="20" cy="215" r="3" fill="#F8D55B"/>',
+ bg_christmas:'<rect width="360" height="240" fill="#1F2A4A"/><circle cx="312" cy="40" r="16" fill="#F6EBC0"/><circle cx="40" cy="30" r="1.8" fill="#fff"/><circle cx="90" cy="60" r="1.5" fill="#fff"/><circle cx="140" cy="26" r="2" fill="#fff"/><circle cx="190" cy="70" r="1.5" fill="#fff"/><circle cx="240" cy="34" r="1.8" fill="#fff"/><circle cx="270" cy="82" r="1.5" fill="#fff"/><circle cx="60" cy="100" r="1.5" fill="#fff"/><circle cx="160" cy="105" r="1.5" fill="#fff"/><circle cx="330" cy="100" r="1.5" fill="#fff"/><path d="M0 160 Q180 140 360 160 V240 H0 Z" fill="#EEF3F8"/><polygon points="70,112 56,140 84,140" fill="#2E7D4F"/><polygon points="70,124 52,152 88,152" fill="#2E7D4F"/><polygon points="290,108 274,138 306,138" fill="#2E7D4F"/><polygon points="290,122 270,152 310,152" fill="#2E7D4F"/><circle cx="290" cy="104" r="3.5" fill="#F8D55B"/><circle cx="70" cy="108" r="3.5" fill="#F8D55B"/><circle cx="120" cy="200" r="2" fill="#fff"/><circle cx="250" cy="225" r="2" fill="#fff"/><circle cx="30" cy="190" r="2" fill="#fff"/>'
+};
+
+/* 服裝 */
+ACC.roast_turkey_hat='<ellipse cx="0" cy="-31" rx="27" ry="6" fill="#6DBE5E"/><path d="M-24 -31 Q-20 -37 -15 -31 Q-10 -37 -5 -31 Q0 -37 5 -31 Q10 -37 15 -31 Q20 -37 24 -31 Z" fill="#4E9F4E"/>'+
+ '<g transform="translate(-25,-47) rotate(40)"><ellipse cx="0" cy="0" rx="8" ry="11" fill="#B8651F"/><ellipse cx="-2" cy="-3" rx="3" ry="5" fill="#E39A45"/><rect x="-2" y="8" width="4" height="9" fill="#F4E8D0"/><circle cx="-2.6" cy="18" r="3" fill="#F4E8D0"/><circle cx="2.6" cy="18" r="3" fill="#F4E8D0"/></g>'+
+ '<g transform="translate(25,-47) rotate(-40)"><ellipse cx="0" cy="0" rx="8" ry="11" fill="#B8651F"/><ellipse cx="2" cy="-3" rx="3" ry="5" fill="#E39A45"/><rect x="-2" y="8" width="4" height="9" fill="#F4E8D0"/><circle cx="-2.6" cy="18" r="3" fill="#F4E8D0"/><circle cx="2.6" cy="18" r="3" fill="#F4E8D0"/></g>'+
+ '<ellipse cx="0" cy="-46" rx="22" ry="15" fill="#C9772B"/><ellipse cx="-5" cy="-52" rx="12" ry="6" fill="#E39A45"/><path d="M-14 -44 Q0 -37 14 -44" stroke="#8E4B14" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M-10 -38 Q0 -33 10 -38" stroke="#8E4B14" stroke-width="1.5" fill="none" stroke-linecap="round"/>'+
+ '<circle cx="12" cy="-58" r="3.4" fill="#E24B4A"/><circle cx="-14" cy="-56" r="2.6" fill="#4E9F4E"/>';
+ACC.sci_goggles='<path d="M-39 -8 H-25 M25 -8 H39" stroke="#3A5F8F" stroke-width="5" stroke-linecap="round"/>'+
+ '<circle cx="-14" cy="-8" r="11.5" fill="#BFEAF5" fill-opacity=".5" stroke="#3A8FD9" stroke-width="4"/><circle cx="14" cy="-8" r="11.5" fill="#BFEAF5" fill-opacity=".5" stroke="#3A8FD9" stroke-width="4"/><path d="M-3 -8 H3" stroke="#3A8FD9" stroke-width="4"/>'+
+ '<path d="M-21 -13 Q-18 -17 -13 -17" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" opacity=".85"/><path d="M7 -13 Q10 -17 15 -17" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" opacity=".85"/>'+
+ '<circle cx="-24.5" cy="-8" r="1.4" fill="#fff"/><circle cx="24.5" cy="-8" r="1.4" fill="#fff"/>';
+
+/* 家具 */
+FUR.bicycle=SH(40)+
+ '<g stroke="#333" stroke-width="3" fill="none"><circle cx="-26" cy="-14" r="14"/><circle cx="26" cy="-14" r="14"/></g>'+
+ '<g stroke="#9A9A9A" stroke-width="1"><path d="M-26 -28 V0 M-40 -14 H-12 M-36 -24 L-16 -4 M-36 -4 L-16 -24"/><path d="M26 -28 V0 M12 -14 H40 M16 -24 L36 -4 M16 -4 L36 -24"/></g>'+
+ '<g stroke="#E24B4A" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M-26 -14 L-4 -14 L-12 -38 Z"/><path d="M-12 -38 L16 -40 L-4 -14"/><path d="M16 -40 L26 -14"/></g>'+
+ '<rect x="-20" y="-44" width="14" height="5" rx="2.5" fill="#333"/><path d="M-12 -40 V-38" stroke="#333" stroke-width="3"/>'+
+ '<path d="M16 -40 L14 -48 M8 -49 H22" stroke="#333" stroke-width="3" stroke-linecap="round" fill="none"/>'+
+ '<circle cx="-4" cy="-14" r="4.5" fill="#FAC775" stroke="#BA7517" stroke-width="1.5"/><path d="M-4 -14 L2 -6" stroke="#555" stroke-width="3" stroke-linecap="round"/><rect x="-1" y="-8" width="8" height="3" rx="1.5" fill="#333"/>'+
+ '<circle cx="26" cy="-14" r="2.5" fill="#555"/><circle cx="-26" cy="-14" r="2.5" fill="#555"/>';
+FUR.toilet=SH(26)+
+ '<rect x="-15" y="-62" width="30" height="24" rx="5" fill="#F4F7FA" stroke="#B8C7DE" stroke-width="2"/><rect x="-5" y="-66" width="10" height="5" rx="2.5" fill="#B8C7DE"/>'+
+ '<rect x="-10" y="-10" width="20" height="10" rx="3" fill="#E6EDF4" stroke="#B8C7DE" stroke-width="2"/>'+
+ '<path d="M-20 -32 Q-21 -10 -9 -8 L9 -8 Q21 -10 20 -32 Z" fill="#F4F7FA" stroke="#B8C7DE" stroke-width="2" stroke-linejoin="round"/>'+
+ '<ellipse cx="0" cy="-32" rx="22" ry="8" fill="#fff" stroke="#B8C7DE" stroke-width="2"/><ellipse cx="0" cy="-32" rx="14" ry="4.5" fill="#BFE3F5"/>'+
+ '<path d="M-12 -24 Q-14 -16 -8 -13" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".8"/>';
+
+/* 背景 */
+(function(){
+ const leaf=function(x,y,r,c,a){return '<ellipse cx="'+x+'" cy="'+y+'" rx="'+r+'" ry="'+(r*.5)+'" transform="rotate('+a+' '+x+' '+y+')" fill="'+c+'"/>'};
+ const tree=function(x,y,s){return '<g transform="translate('+x+','+y+') scale('+s+')"><rect x="-6" y="0" width="12" height="62" fill="#6B4423"/><path d="M0 30 L-18 8 M0 36 L20 14" stroke="#6B4423" stroke-width="5" stroke-linecap="round"/><circle cx="-24" cy="-4" r="26" fill="#D9531E"/><circle cx="22" cy="-6" r="28" fill="#E8872A"/><circle cx="0" cy="-26" r="30" fill="#F2B032"/><circle cx="-8" cy="-4" r="22" fill="#E8872A"/></g>'};
+ const pumpkin=function(x,y,s,c){return '<g transform="translate('+x+','+y+') scale('+s+')"><ellipse cx="0" cy="-10" rx="16" ry="12" fill="'+c+'"/><ellipse cx="-8" cy="-10" rx="8" ry="12" fill="#00000012"/><ellipse cx="8" cy="-10" rx="8" ry="12" fill="#00000012"/><rect x="-2" y="-26" width="4" height="7" rx="1.5" fill="#5B7B2E"/></g>'};
+ BG.bg_autumn='<rect width="360" height="240" fill="#F9E0B8"/><circle cx="300" cy="46" r="20" fill="#FFF3D2"/>'+
+  '<path d="M0 118 Q70 84 150 114 Q230 90 360 120 V240 H0 Z" fill="#E6A850"/><path d="M0 142 Q110 112 210 138 Q290 120 360 142 V240 H0 Z" fill="#CC7F36"/><path d="M0 160 Q180 144 360 160 V240 H0 Z" fill="#B7703A"/>'+
+  tree(52,92,1)+tree(312,112,.7)+
+  leaf(110,198,12,'#E8872A',-10)+leaf(122,204,10,'#D9531E',20)+leaf(100,206,9,'#F2B032',8)+leaf(262,214,12,'#D9531E',-15)+leaf(276,208,10,'#F2B032',25)+leaf(250,222,9,'#E8872A',5)+leaf(36,214,10,'#F2B032',-20)+
+  pumpkin(330,226,1,'#E8872A')+
+  leaf(90,60,6,'#D9531E',30)+leaf(160,40,6,'#E8872A',-30)+leaf(210,92,6,'#F2B032',50)+leaf(250,56,6,'#D9531E',-10)+leaf(130,110,6,'#F2B032',20)+leaf(190,150,6,'#E8872A',-40)+leaf(284,160,6,'#D9531E',15);
+ let gar='<path d="M0 22 Q90 50 180 28 Q270 50 360 22" stroke="#6B4423" stroke-width="2" fill="none"/>';
+ [[20,30,'#D9531E'],[52,38,'#E8872A'],[84,43,'#F2B032'],[116,44,'#D9531E'],[148,40,'#E8872A'],[180,31,'#F2B032'],[212,36,'#D9531E'],[244,43,'#E8872A'],[276,44,'#F2B032'],[308,40,'#D9531E'],[340,31,'#E8872A']].forEach(function(p){gar+=leaf(p[0],p[1]+4,9,p[2],p[0]%3?40:-40)});
+ BG.bg_thanksgiving='<rect width="360" height="240" fill="#EBCB9C"/><rect y="150" width="360" height="90" fill="#A8713C"/><rect y="145" width="360" height="6" fill="#7A4E27"/><path d="M0 178H360M0 208H360" stroke="#8E5B2E" stroke-width="2"/><path d="M60 150V240M150 150V240M240 150V240M330 150V240" stroke="#8E5B2E" stroke-width="1" opacity=".5"/>'+
+  gar+
+  '<rect x="26" y="60" width="92" height="76" fill="#F9E0B8" stroke="#6B4423" stroke-width="5"/><path d="M72 60V136M26 98H118" stroke="#6B4423" stroke-width="4"/><circle cx="50" cy="84" r="10" fill="#E8872A"/><circle cx="92" cy="80" r="11" fill="#D9531E"/><circle cx="70" cy="76" r="10" fill="#F2B032"/><rect x="66" y="112" width="6" height="22" fill="#6B4423"/>'+
+  '<rect x="236" y="96" width="98" height="6" rx="2" fill="#6B4423"/><rect x="246" y="102" width="4" height="12" fill="#6B4423"/><rect x="320" y="102" width="4" height="12" fill="#6B4423"/>'+
+  pumpkin(262,96,.9,'#E8872A')+pumpkin(292,96,.6,'#F2B032')+
+  '<g transform="translate(314,96)"><path d="M-4 0 Q-10 -26 0 -34 Q10 -26 4 0 Z" fill="#F2C440"/><path d="M-4 0 Q-12 -14 -9 -24 Q-1 -14 0 0Z M4 0 Q12 -14 9 -24 Q1 -14 0 0Z" fill="#6AA84F"/></g>'+
+  '<g transform="translate(318,224)"><path d="M-30 -30 H30 L24 0 H-24 Z" fill="#C9954F"/><path d="M-27 -20 H27 M-25 -10 H25" stroke="#A8713C" stroke-width="2"/>'+pumpkin(-10,-26,.7,'#E8872A')+'<circle cx="12" cy="-34" r="8" fill="#D9531E"/><circle cx="22" cy="-30" r="7" fill="#C73B2B"/><path d="M0 -34 Q-6 -56 4 -62 Q14 -56 6 -34Z" fill="#F2C440"/></g>'+
+  pumpkin(40,222,1.1,'#E8872A')+pumpkin(72,226,.8,'#F2B032');
+})();
+
+/* ===== 12月聖誕新增美術 ===== */
+ACC.reindeer_nose='<circle cx="0" cy="1.5" r="7" fill="#E5322D" stroke="#A81F1B" stroke-width="1.2"/><ellipse cx="-2.4" cy="-1" rx="2.4" ry="1.6" fill="#fff" opacity=".7"/>';
+ACC.reindeer_antlers=(function(){
+ const side=function(s){return '<g transform="scale('+s+',1)" stroke="#7A4A22" stroke-linecap="round" stroke-linejoin="round" fill="none">'+
+  '<path d="M13 -30 Q15 -42 24 -52" stroke-width="6"/><path d="M19 -42 Q12 -48 9 -58" stroke-width="4.5"/><path d="M22 -49 Q30 -50 35 -57" stroke-width="4.5"/>'+
+  '<path d="M13 -30 Q15 -42 24 -52" stroke="#B9824A" stroke-width="2.4"/><path d="M19 -42 Q12 -48 9 -58" stroke="#B9824A" stroke-width="1.6"/><path d="M22 -49 Q30 -50 35 -57" stroke="#B9824A" stroke-width="1.6"/></g>'};
+ return side(-1)+side(1);
+})();
+/* 家具：耶穌寶寶（馬槽）*/
+FUR.baby_jesus=SH(34)+
+ '<path d="M-26 -18 L-34 0 M26 -18 L34 0 M-26 -18 L-12 0 M26 -18 L12 0" stroke="#6B4423" stroke-width="5" stroke-linecap="round"/>'+
+ '<path d="M-30 -30 L30 -30 L24 -12 Q0 -8 -24 -12 Z" fill="#B9824A" stroke="#6B4423" stroke-width="2.5" stroke-linejoin="round"/>'+
+ '<path d="M-26 -22 H26 M-24 -16 H24" stroke="#8E5B2E" stroke-width="1.5"/>'+
+ '<path d="M-27 -30 Q-18 -38 -8 -31 Q0 -40 10 -32 Q20 -39 27 -30 Z" fill="#F2C95C" stroke="#D9A63A" stroke-width="1.2"/>'+
+ '<path d="M-20 -33 L-8 -40 M-4 -33 L8 -42 M10 -33 L22 -39" stroke="#D9A63A" stroke-width="1.5" stroke-linecap="round"/>'+
+ '<path d="M-20 -32 Q-20 -38 -12 -38 L14 -38 Q22 -38 22 -32 Q0 -28 -20 -32 Z" fill="#fff" stroke="#E3DACA" stroke-width="1.2"/>'+
+ '<circle cx="-8" cy="-45" r="9" fill="#FFD9B8" stroke="#E6B58E" stroke-width="1.2"/>'+
+ '<path d="M-12 -46 Q-10 -48 -8 -46 M-6 -46 Q-4 -48 -2 -46" stroke="#7A4A22" stroke-width="1.3" fill="none" stroke-linecap="round"/><circle cx="-12" cy="-42" r="1.8" fill="#FFB3A0" opacity=".8"/><path d="M-9 -41 Q-7.5 -39.5 -6 -41" stroke="#C06A55" stroke-width="1.2" fill="none" stroke-linecap="round"/>'+
+ '<path d="M-17 -38 Q-8 -34 4 -38" stroke="#EADFC9" stroke-width="2" fill="none"/>'+
+ '<ellipse cx="-8" cy="-57" rx="12" ry="3.4" fill="none" stroke="#F2B032" stroke-width="2.2"/>'+
+ '<path d="M20 -62 l2 5 5 .5 -4 3.5 1.2 5 -4.2 -2.8 -4.2 2.8 1.2 -5 -4 -3.5 5 -.5z" fill="#FAC775" stroke="#BA7517" stroke-width="1"/>';
+/* 家具：禮物堆 */
+FUR.gift_pile=SH(34)+
+ '<rect x="-34" y="-26" width="38" height="26" rx="2" fill="#E24B4A" stroke="#A32D2D" stroke-width="1.5"/><rect x="-18" y="-26" width="7" height="26" fill="#FAC775"/><rect x="-34" y="-16" width="38" height="6" fill="#FAC775"/>'+
+ '<rect x="6" y="-36" width="30" height="36" rx="2" fill="#2E8B4F" stroke="#1D6A38" stroke-width="1.5"/><rect x="18" y="-36" width="6" height="36" fill="#F4E8D0"/><rect x="6" y="-20" width="30" height="6" fill="#F4E8D0"/>'+
+ '<g transform="translate(21,-36)"><ellipse cx="-5" cy="-3" rx="5.5" ry="3.4" transform="rotate(-25 -5 -3)" fill="#F4E8D0" stroke="#C9BBA0" stroke-width="1"/><ellipse cx="5" cy="-3" rx="5.5" ry="3.4" transform="rotate(25 5 -3)" fill="#F4E8D0" stroke="#C9BBA0" stroke-width="1"/><circle cx="0" cy="-1" r="2.8" fill="#F4E8D0" stroke="#C9BBA0" stroke-width="1"/></g>'+
+ '<rect x="-22" y="-46" width="28" height="20" rx="2" fill="#3A8FD9" stroke="#2B6DAE" stroke-width="1.5"/><rect x="-10" y="-46" width="6" height="20" fill="#fff"/><rect x="-22" y="-39" width="28" height="5" fill="#fff"/>'+
+ '<g transform="translate(-7,-46)"><ellipse cx="-5" cy="-3" rx="5.5" ry="3.4" transform="rotate(-25 -5 -3)" fill="#fff" stroke="#C9D6E6" stroke-width="1"/><ellipse cx="5" cy="-3" rx="5.5" ry="3.4" transform="rotate(25 5 -3)" fill="#fff" stroke="#C9D6E6" stroke-width="1"/><circle cx="0" cy="-1" r="2.8" fill="#fff" stroke="#C9D6E6" stroke-width="1"/></g>'+
+ '<g transform="translate(-15,-26)"><ellipse cx="-5" cy="-3" rx="5.5" ry="3.4" transform="rotate(-25 -5 -3)" fill="#FAC775" stroke="#BA7517" stroke-width="1"/><ellipse cx="5" cy="-3" rx="5.5" ry="3.4" transform="rotate(25 5 -3)" fill="#FAC775" stroke="#BA7517" stroke-width="1"/><circle cx="0" cy="-1" r="2.8" fill="#FAC775" stroke="#BA7517" stroke-width="1"/></g>'+
+ '<g transform="translate(30,-4)"><rect x="-8" y="-12" width="16" height="12" rx="1.5" fill="#7F77DD" stroke="#5B53B8" stroke-width="1.2"/><rect x="-1.5" y="-12" width="3" height="12" fill="#FAC775"/></g>';
+/* 背景 */
+(function(){
+ const flake=function(x,y,r,o){return '<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="#fff" opacity="'+(o||.9)+'"/>'};
+ const pine=function(x,y,s){return '<g transform="translate('+x+','+y+') scale('+s+')"><rect x="-4" y="0" width="8" height="14" fill="#6B4423"/><polygon points="0,-62 -20,-30 20,-30" fill="#2F7D5B"/><polygon points="0,-46 -26,-8 26,-8" fill="#2A6F50"/><polygon points="0,-28 -32,10 32,10" fill="#256445"/><path d="M0 -62 L-8 -48 Q-3 -45 0 -49 Q4 -45 8 -48Z M-12 -34 L-20 -22 Q-12 -19 -6 -24 Q0 -19 8 -23 L12 -34 Q0 -30 -12 -34Z" fill="#fff"/><path d="M-18 -4 L-30 8 Q-20 12 -12 6 Q0 12 12 6 Q20 12 30 8 L18 -4 Q0 2 -18 -4Z" fill="#fff"/></g>'};
+ let fl='';[[30,24,2.6],[70,60,2],[112,18,2.4],[150,48,3],[196,22,2.2],[236,64,2.6],[278,30,3],[320,56,2.2],[344,20,2.4],[52,104,2.2],[132,92,2.6],[214,100,2],[300,98,2.8],[26,150,2.4],[100,140,2],[172,128,2.6],[262,142,2.2],[338,136,2.6],[84,186,2.4],[240,190,2.4],[316,180,2]].forEach(function(p){fl+=flake(p[0],p[1],p[2])});
+ const sm='<g transform="translate(300,196)"><ellipse cx="0" cy="-10" rx="17" ry="15" fill="#fff" stroke="#C9D6E6" stroke-width="1.5"/><circle cx="0" cy="-34" r="12" fill="#fff" stroke="#C9D6E6" stroke-width="1.5"/><rect x="-11" y="-50" width="22" height="4" rx="1" fill="#2C2C2A"/><rect x="-7" y="-62" width="14" height="13" fill="#2C2C2A"/><rect x="-7" y="-53" width="14" height="3" fill="#E24B4A"/><circle cx="-4" cy="-36" r="1.5" fill="#2C2C2A"/><circle cx="4" cy="-36" r="1.5" fill="#2C2C2A"/><path d="M0 -33 L9 -31 L0 -30Z" fill="#E8872A"/><path d="M-11 -25 Q0 -20 11 -25 L11 -20 Q0 -15 -11 -20Z" fill="#E24B4A"/><circle cx="0" cy="-10" r="2" fill="#2C2C2A"/><circle cx="0" cy="-3" r="2" fill="#2C2C2A"/><path d="M-16 -14 L-30 -26 M16 -14 L30 -24" stroke="#6B4423" stroke-width="2.5" stroke-linecap="round"/></g>';
+ BG.bg_snow='<defs><linearGradient id="snowSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7FA6D6"/><stop offset="1" stop-color="#DCEBFA"/></linearGradient></defs><rect width="360" height="240" fill="url(#snowSky)"/><circle cx="296" cy="44" r="18" fill="#FFF8DC" opacity=".95"/>'+
+  '<path d="M0 118 Q60 86 130 112 Q200 84 280 110 Q330 96 360 108 V240 H0Z" fill="#EAF2FB"/><path d="M0 142 Q120 116 220 140 Q300 124 360 140 V240 H0Z" fill="#F6FAFF"/><path d="M0 160 Q180 146 360 160 V240 H0Z" fill="#FFFFFF"/>'+
+  pine(44,98,.8)+pine(88,112,.6)+pine(326,104,.9)+pine(278,118,.55)+fl+sm+
+  '<path d="M20 214 Q60 206 100 214 M210 220 Q250 212 290 220" stroke="#D3E2F3" stroke-width="3" fill="none" stroke-linecap="round"/>';
+ const star=function(x,y,r,c){return '<path d="M'+x+' '+(y-r)+' l'+(r*.3)+' '+(r*.7)+' '+(r*.75)+' '+(r*.08)+' -'+(r*.55)+' '+(r*.5)+' '+(r*.18)+' '+(r*.78)+' -'+(r*.68)+' -'+(r*.42)+' -'+(r*.68)+' '+(r*.42)+' '+(r*.18)+' -'+(r*.78)+' -'+(r*.55)+' -'+(r*.5)+' '+(r*.75)+' -'+(r*.08)+'z" fill="'+c+'"/>'};
+ let gar='<path d="M0 14 Q60 44 120 20 Q180 48 240 20 Q300 44 360 14" stroke="#2E8B4F" stroke-width="7" fill="none" stroke-linecap="round"/>';
+ [[22,28],[62,37],[104,32],[148,38],[194,36],[238,28],[282,38],[326,30]].forEach(function(p,i){gar+='<circle cx="'+p[0]+'" cy="'+(p[1]+5)+'" r="4.2" fill="'+['#E24B4A','#FAC775','#3A8FD9','#FAC775'][i%4]+'"/><circle cx="'+p[0]+'" cy="'+(p[1]+5)+'" r="8" fill="#FFE9A0" opacity=".28"/>'});
+ let brick='';for(var r=0;r<5;r++)for(var c=0;c<4;c++)brick+='<rect x="'+(18+c*22+(r%2?11:0))+'" y="'+(74+r*15)+'" width="20" height="13" rx="1.5" fill="#B5654A" stroke="#8F4A33" stroke-width="1"/>';
+ const stock=function(x,c1,c2){return '<g transform="translate('+x+',70)"><path d="M-6 0 V16 Q-6 24 2 24 Q10 24 10 18 L4 18 Q4 20 2 20 Q0 20 0 16 V0Z" fill="'+c1+'"/><rect x="-7" y="-3" width="12" height="6" rx="2" fill="'+c2+'"/></g>'};
+ BG.bg_xmas_indoor='<rect width="360" height="240" fill="#C0524A"/>'+(function(){let s='';for(var i=0;i<12;i++)s+='<rect x="'+(i*30)+'" y="0" width="15" height="150" fill="#B8453F"/>';return s})()+
+  '<rect y="150" width="360" height="90" fill="#A06B3F"/><rect y="145" width="360" height="7" fill="#F4E8D0"/><path d="M0 178H360M0 208H360" stroke="#855630" stroke-width="2"/><path d="M60 152V240M150 152V240M240 152V240M330 152V240" stroke="#855630" stroke-width="1" opacity=".5"/>'+
+  gar+
+  '<rect x="10" y="60" width="108" height="86" fill="#8F4A33"/>'+brick+'<rect x="4" y="52" width="120" height="12" rx="2" fill="#6B4423"/><rect x="4" y="52" width="120" height="3.5" fill="#8E5B2E"/>'+
+  '<path d="M32 146 V104 Q32 92 64 92 Q96 92 96 104 V146Z" fill="#2B1A12"/><path d="M44 146 Q40 128 52 120 Q50 132 58 126 Q58 112 66 106 Q70 120 76 124 Q86 120 84 146Z" fill="#F08A24"/><path d="M52 146 Q52 134 60 130 Q62 138 68 134 Q74 140 76 146Z" fill="#FFD84A"/><rect x="38" y="143" width="52" height="5" rx="2" fill="#5A3A22"/>'+
+  stock(30,'#E24B4A','#fff')+stock(64,'#2E8B4F','#fff')+stock(98,'#E24B4A','#fff')+
+  '<g transform="translate(180,78)"><circle r="21" fill="none" stroke="#2E8B4F" stroke-width="9"/><circle cx="-12" cy="-12" r="3" fill="#E24B4A"/><circle cx="13" cy="-8" r="3" fill="#E24B4A"/><circle cx="-6" cy="15" r="3" fill="#FAC775"/><path d="M0 18 L-10 30 L-2 25 L0 32 L2 25 L10 30Z" fill="#E24B4A"/><circle cx="0" cy="20" r="3.5" fill="#A32D2D"/></g>'+
+  '<rect x="246" y="62" width="92" height="76" rx="3" fill="#1F2A4A" stroke="#F4E8D0" stroke-width="6"/><path d="M292 62V138M246 100H338" stroke="#F4E8D0" stroke-width="4"/>'+flake(262,76,2)+flake(280,88,1.6)+flake(312,74,2)+flake(326,92,1.8)+flake(270,116,2)+flake(304,120,1.6)+flake(322,126,2)+star(262,72,0.1,'#fff')+'<circle cx="266" cy="124" r="0" fill="#fff"/>'+
+  '<path d="M246 138 H338 L334 132 H250Z" fill="#fff"/>'+
+  '<ellipse cx="180" cy="222" rx="108" ry="12" fill="#F4E8D0"/><ellipse cx="180" cy="222" rx="96" ry="9.5" fill="none" stroke="#E24B4A" stroke-width="3"/><ellipse cx="180" cy="222" rx="80" ry="7.5" fill="none" stroke="#2E8B4F" stroke-width="2"/>';
+})();
+
+/* 聖誕圍巾：紅綠白條紋 + 流蘇 */
+ACC.xmas_scarf='<defs><clipPath id="xsc"><path d="M-27 19 Q0 30 27 19 L27 27 Q0 38 -27 27 Z"/></clipPath><clipPath id="xst"><path d="M10 29 L17 48 L29 44 L22 25 Z"/></clipPath></defs>'+
+ '<path d="M-27 19 Q0 30 27 19 L27 27 Q0 38 -27 27 Z" fill="#D63A35"/>'+
+ '<g clip-path="url(#xsc)"><path d="M-18 16 L-14 40 M-6 20 L-2 44 M6 20 L10 44 M18 16 L22 40" stroke="#fff" stroke-width="3"/><path d="M-12 16 L-8 40 M0 20 L4 44 M12 20 L16 44" stroke="#2E8B4F" stroke-width="5"/></g>'+
+ '<path d="M10 29 L17 48 L29 44 L22 25 Z" fill="#C2312C"/>'+
+ '<g clip-path="url(#xst)"><path d="M8 34 L30 28 M10 40 L32 34" stroke="#fff" stroke-width="3"/><path d="M12 45 L34 39 M6 29 L28 23" stroke="#2E8B4F" stroke-width="5"/></g>'+
+ '<path d="M17.5 47 L16.5 53 M21 46 L20 52 M24.5 45 L23.5 51 M28 44 L27 50" stroke="#F4E8D0" stroke-width="2" stroke-linecap="round"/>'+
+ '<path d="M-27 19 Q0 30 27 19 L27 27 Q0 38 -27 27 Z" fill="none" stroke="#9E2420" stroke-width="1.2"/>';
+
+
+/* ===== 芬蘭小鎮背景 ===== */
+(function(){
+ const win=function(x,y,w,h){return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="#FFD76A" stroke="#F8F4EA" stroke-width="2"/><path d="M'+(x+w/2)+' '+y+'V'+(y+h)+'" stroke="#F8F4EA" stroke-width="1.2"/><rect x="'+(x-1)+'" y="'+(y-1)+'" width="'+(w+2)+'" height="'+(h+2)+'" fill="#FFD76A" opacity=".25"/>'};
+ const house=function(x,y,w,h,wall,roof,rh){ // x,y = 左下角
+  return '<g><rect x="'+x+'" y="'+(y-h)+'" width="'+w+'" height="'+h+'" fill="'+wall+'"/>'+
+   '<path d="M'+x+' '+(y-h)+'H'+(x+w)+'" stroke="#F8F4EA" stroke-width="2"/><path d="M'+x+' '+y+'H'+(x+w)+'" stroke="#F8F4EA" stroke-width="2"/>'+
+   '<polygon points="'+(x-4)+','+(y-h)+' '+(x+w/2)+','+(y-h-rh)+' '+(x+w+4)+','+(y-h)+'" fill="'+roof+'"/>'+
+   '<path d="M'+(x-4)+' '+(y-h)+' L'+(x+w/2)+' '+(y-h-rh)+' L'+(x+w+4)+' '+(y-h)+' Q'+(x+w/2)+' '+(y-h-rh+6)+' '+(x-4)+' '+(y-h)+'Z" fill="#fff"/>'+
+   win(x+w*.14,y-h+h*.28,w*.24,h*.3)+win(x+w*.62,y-h+h*.28,w*.24,h*.3)+
+   '<rect x="'+(x+w*.42)+'" y="'+(y-h*.42)+'" width="'+(w*.16)+'" height="'+(h*.42)+'" fill="#7A4A22"/></g>'};
+ const pine=function(x,y,s){return '<g transform="translate('+x+','+y+') scale('+s+')"><rect x="-3" y="0" width="6" height="12" fill="#5A3A1E"/><polygon points="0,-58 -17,-28 17,-28" fill="#1E5A45"/><polygon points="0,-42 -22,-6 22,-6" fill="#1A4F3C"/><polygon points="0,-26 -27,10 27,10" fill="#164533"/><path d="M0 -58 L-7 -45 Q0 -41 7 -45Z M-14 -32 L-21 -22 Q-8 -17 0 -22 Q8 -17 21 -22 L14 -32 Q0 -27 -14 -32Z" fill="#fff"/></g>'};
+ const lamp=function(x,y){return '<g transform="translate('+x+','+y+')"><circle cx="0" cy="-50" r="20" fill="#FFE9A0" opacity=".22"/><rect x="-1.6" y="-46" width="3.2" height="46" fill="#2A2F3F"/><rect x="-5" y="-54" width="10" height="9" rx="2" fill="#FFE08A" stroke="#2A2F3F" stroke-width="1.5"/><path d="M-7 -54 H7 L0 -60Z" fill="#2A2F3F"/></g>'};
+ let st='';[[22,18],[58,40],[96,12],[134,30],[170,10],[208,34],[246,14],[284,30],[330,12],[348,44],[40,66],[318,70]].forEach(function(p,i){st+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="'+(i%3?1.2:1.8)+'" fill="#fff" opacity="'+(i%2?.7:.95)+'"/>'});
+ let fl='';[[40,100],[92,130],[150,96],[210,120],[270,98],[330,126],[24,170],[120,180],[200,170],[300,184],[70,206],[250,208]].forEach(function(p,i){fl+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="'+(i%3?1.6:2.2)+'" fill="#fff" opacity=".9"/>'});
+ BG.bg_finland='<defs><linearGradient id="finSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0E1E45"/><stop offset=".6" stop-color="#1D4A78"/><stop offset="1" stop-color="#5C8FB8"/></linearGradient>'+
+  '<linearGradient id="finAur" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5CFFB0" stop-opacity="0"/><stop offset=".5" stop-color="#5CFFB0" stop-opacity=".55"/><stop offset="1" stop-color="#7BE0FF" stop-opacity="0"/></linearGradient>'+
+  '<linearGradient id="finAur2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C58CFF" stop-opacity="0"/><stop offset=".5" stop-color="#C58CFF" stop-opacity=".45"/><stop offset="1" stop-color="#C58CFF" stop-opacity="0"/></linearGradient></defs>'+
+  '<rect width="360" height="240" fill="url(#finSky)"/>'+st+
+  '<path d="M-10 70 Q60 10 130 50 Q200 90 270 30 Q320 0 380 24 V70 Q320 44 270 76 Q200 130 130 92 Q60 58 -10 100Z" fill="url(#finAur)"/>'+
+  '<path d="M30 90 Q100 40 170 76 Q240 104 330 56 V86 Q240 134 170 108 Q100 78 30 120Z" fill="url(#finAur2)"/>'+
+  '<circle cx="318" cy="34" r="10" fill="#F6F1D8" opacity=".9"/>'+
+  '<path d="M0 132 Q80 118 170 130 Q260 120 360 132 V240 H0Z" fill="#CFE0F0"/>'+
+  pine(20,138,.9)+pine(52,144,.7)+pine(338,138,.95)+pine(312,146,.7)+
+  /* 教堂：綠色銅皮屋頂與尖塔 */
+  '<g transform="translate(285,142)"><rect x="-14" y="-48" width="28" height="48" fill="#F1EBDD"/><rect x="-26" y="-26" width="14" height="26" fill="#F1EBDD"/><polygon points="-16,-48 0,-70 16,-48" fill="#3F8F7A"/><rect x="-1.2" y="-92" width="2.4" height="24" fill="#3F8F7A"/><polygon points="-6,-68 6,-68 0,-96" fill="#3F8F7A"/><path d="M-1 -100 V-92 M-4 -97 H2" stroke="#E8C36A" stroke-width="1.6"/><path d="M-6 -36 Q0 -46 6 -36 V-24 H-6Z" fill="#FFD76A"/><path d="M-22 -22 Q-19 -30 -16 -22 V-12 H-22Z" fill="#FFD76A"/></g>'+
+  house(26,152,52,34,'#B5453A','#7B2D26',20)+
+  house(84,150,40,28,'#E2B04C','#9A6A22',16)+
+  house(220,152,46,30,'#4B86B4','#2D5D82',18)+
+  /* 煙囪與煙 */
+  '<rect x="46" y="104" width="7" height="12" fill="#6A3A30"/><path d="M50 100 Q54 92 49 86 Q46 80 51 74" stroke="#F4F7FB" stroke-width="3" fill="none" stroke-linecap="round" opacity=".7"/>'+
+  '<path d="M0 156 Q180 142 360 156 V240 H0Z" fill="#EAF2FB"/><path d="M0 176 Q180 160 360 176 V240 H0Z" fill="#F8FBFF"/>'+
+  /* 鋪雪小路 */
+  '<path d="M130 240 Q150 196 178 178 L200 178 Q222 196 240 240Z" fill="#DCE8F5" opacity=".8"/><path d="M158 236 Q172 204 188 188 M198 236 Q196 208 192 190" stroke="#C3D4E8" stroke-width="2" fill="none" stroke-linecap="round"/>'+
+  lamp(122,184)+lamp(246,184)+
+  /* 木柵欄 */
+  '<g stroke="#8A5A32" stroke-width="2.4" stroke-linecap="round"><path d="M-2 190 H44 M-2 198 H44"/><path d="M6 186 V204 M18 186 V204 M30 186 V204 M42 186 V204"/></g>'+
+  '<path d="M-4 190 H46" stroke="#fff" stroke-width="3" opacity=".8"/>'+
+  /* 木桑拿小屋與結冰湖面 */
+  '<path d="M290 214 Q320 204 362 212 V240 H280Z" fill="#BFE0F2"/><path d="M296 224 Q320 218 350 224" stroke="#E6F4FB" stroke-width="2" fill="none"/>'+
+  fl;
+})();
+
+
+/* ===== 1月新增美術：2027 / 倫敦 ===== */
+(function(){
+ const DG={'2':'M-6 -9 Q-6 -15 0 -15 Q7 -15 7 -9 Q7 -4 -7 11 H8','0':'M0 -15 Q8 -15 8 0 Q8 15 0 15 Q-8 15 -8 0 Q-8 -15 0 -15Z','7':'M-7 -14 H8 Q2 -2 -2 14'};
+ const dig=function(ch,x,y,s,fill,line,w){return '<g transform="translate('+x+','+y+') scale('+s+')"><path d="'+DG[ch]+'" fill="none" stroke="'+line+'" stroke-width="'+(w+5)+'" stroke-linecap="round" stroke-linejoin="round"/><path d="'+DG[ch]+'" fill="none" stroke="'+fill+'" stroke-width="'+w+'" stroke-linecap="round" stroke-linejoin="round"/></g>'};
+ const word=function(x,y,s,gap,fill,line,w){let o='';'2027'.split('').forEach(function(c,i){o+=dig(c,x+(i-1.5)*gap,y,s,fill,line,w)});return o};
+ const burst=function(x,y,r,c){let o='<g transform="translate('+x+','+y+')" stroke="'+c+'" stroke-linecap="round" stroke-width="2.2" fill="none">';for(let a=0;a<12;a++){const t=a*Math.PI/6;o+='<path d="M'+(Math.cos(t)*r*.35).toFixed(1)+' '+(Math.sin(t)*r*.35).toFixed(1)+' L'+(Math.cos(t)*r).toFixed(1)+' '+(Math.sin(t)*r).toFixed(1)+'"/>'}return o+'</g><circle cx="'+x+'" cy="'+y+'" r="3" fill="'+c+'"/>'};
+ const conf=function(){let o='';[[24,70,'#FF5C8A',20],[60,120,'#FFD24A',-30],[96,92,'#4FD1FF',40],[138,60,'#B388FF',10],[178,98,'#FF5C8A',-20],[224,70,'#FFD24A',35],[268,116,'#4FD1FF',-10],[312,86,'#B388FF',25],[340,134,'#FF5C8A',50],[44,170,'#4FD1FF',15],[130,176,'#FFD24A',-40],[236,180,'#FF5C8A',20],[320,176,'#B388FF',-25],[84,206,'#FFD24A',30],[286,210,'#4FD1FF',-15]].forEach(function(p){o+='<rect x="'+p[0]+'" y="'+p[1]+'" width="7" height="3.6" fill="'+p[2]+'" transform="rotate('+p[3]+' '+p[0]+' '+p[1]+')"/>'});return o};
+ /* 背景：歡慶 2027 */
+ let bunt='<path d="M0 8 Q90 34 180 12 Q270 34 360 8" stroke="#F4E8D0" stroke-width="2" fill="none"/>';
+ [[22,14,'#FF5C8A'],[58,22,'#FFD24A'],[94,26,'#4FD1FF'],[130,26,'#B388FF'],[166,18,'#FF5C8A'],[202,18,'#FFD24A'],[238,26,'#4FD1FF'],[274,26,'#B388FF'],[310,22,'#FF5C8A'],[342,14,'#FFD24A']].forEach(function(p){bunt+='<polygon points="'+(p[0]-8)+','+(p[1]-3)+' '+(p[0]+8)+','+(p[1]-3)+' '+p[0]+','+(p[1]+14)+'" fill="'+p[2]+'"/>'});
+ let sky='';[[20,50],[70,30],[300,40],[340,70],[160,44],[250,28]].forEach(function(p){sky+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="1.4" fill="#fff"/>'});
+ let city='';[[0,30,18],[20,44,16],[40,26,20],[64,40,14],[290,36,18],[312,48,16],[332,30,28]].forEach(function(b){city+='<rect x="'+b[0]+'" y="'+(160-b[1])+'" width="'+b[2]+'" height="'+(b[1]+4)+'" fill="#1B1740"/>';for(let k=0;k<3;k++)city+='<rect x="'+(b[0]+4+k*5)+'" y="'+(160-b[1]+6+k*9)+'" width="2.4" height="3.4" fill="#FFD76A"/>'});
+ BG.bg_2027='<defs><linearGradient id="ny27" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#140E3C"/><stop offset=".65" stop-color="#3A1F6E"/><stop offset="1" stop-color="#7A2F7A"/></linearGradient></defs><rect width="360" height="240" fill="url(#ny27)"/>'+sky+
+  burst(70,70,26,'#FFD24A')+burst(300,60,22,'#4FD1FF')+burst(250,118,16,'#FF5C8A')+burst(110,126,14,'#B388FF')+
+  word(180,70,1.25,40,'#FFD24A','#7A3B00',6)+
+  city+bunt+
+  '<rect y="156" width="360" height="84" fill="#2B2260"/><rect y="156" width="360" height="5" fill="#FFD24A"/><path d="M0 188H360M0 216H360" stroke="#40358A" stroke-width="2"/>'+
+  conf();
+ /* 背景：倫敦大笨鐘 */
+ let cl='';[[40,36,26],[130,24,20],[230,42,24],[316,28,22]].forEach(function(c){cl+='<g fill="#FFE9D6" opacity=".9"><ellipse cx="'+c[0]+'" cy="'+c[1]+'" rx="'+c[2]+'" ry="7"/><ellipse cx="'+(c[0]+c[2]*.4)+'" cy="'+(c[1]-5)+'" rx="'+(c[2]*.5)+'" ry="7"/></g>'});
+ const tower='<g transform="translate(286,150)"><rect x="-13" y="-92" width="26" height="92" fill="#C9A56B"/><rect x="-13" y="-92" width="6" height="92" fill="#B38E52"/><rect x="-16" y="-96" width="32" height="8" fill="#B38E52"/><rect x="-14" y="-122" width="28" height="30" fill="#D4B27A"/><circle cx="0" cy="-106" r="11" fill="#FFF8E1" stroke="#6B4A22" stroke-width="2.2"/><path d="M0 -106 V-114 M0 -106 L6 -103" stroke="#2A1D10" stroke-width="2" stroke-linecap="round"/><circle cx="0" cy="-106" r="1.6" fill="#2A1D10"/>'+
+  '<polygon points="-17,-122 0,-156 17,-122" fill="#3F6B5B"/><polygon points="-9,-122 0,-146 9,-122" fill="#52806E"/><path d="M0 -156 V-166" stroke="#E8C36A" stroke-width="2"/><circle cx="0" cy="-168" r="2.4" fill="#E8C36A"/>'+
+  '<g fill="#8F6B3A"><rect x="-9" y="-80" width="4" height="12" rx="2"/><rect x="-2" y="-80" width="4" height="12" rx="2"/><rect x="5" y="-80" width="4" height="12" rx="2"/><rect x="-9" y="-56" width="4" height="12" rx="2"/><rect x="-2" y="-56" width="4" height="12" rx="2"/><rect x="5" y="-56" width="4" height="12" rx="2"/><rect x="-9" y="-32" width="4" height="12" rx="2"/><rect x="-2" y="-32" width="4" height="12" rx="2"/><rect x="5" y="-32" width="4" height="12" rx="2"/></g></g>';
+ const palace='<g transform="translate(150,150)"><rect x="-150" y="-26" width="236" height="26" fill="#BE9A62"/><rect x="-150" y="-26" width="236" height="4" fill="#D4B27A"/>'+(function(){let s='';for(let i=0;i<16;i++)s+='<rect x="'+(-144+i*14.4)+'" y="-18" width="4" height="9" rx="2" fill="#7F5F32"/>';for(let i=0;i<8;i++)s+='<polygon points="'+(-148+i*30)+',-26 '+(-142+i*30)+',-38 '+(-136+i*30)+',-26" fill="#C9A56B"/>';return s})()+'</g>';
+ BG.bg_bigben='<defs><linearGradient id="lonSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F0A08A"/><stop offset=".55" stop-color="#F8CBA0"/><stop offset="1" stop-color="#FDEBC8"/></linearGradient></defs><rect width="360" height="240" fill="url(#lonSky)"/><circle cx="90" cy="92" r="22" fill="#FFF4D0" opacity=".9"/>'+cl+
+  palace+tower+
+  '<rect y="150" width="360" height="12" fill="#6B93B8"/><path d="M0 154H360M20 158H340" stroke="#A9C6DE" stroke-width="1.6" opacity=".8"/><path d="M286 152 V162" stroke="#C9A56B" stroke-width="10" opacity=".35"/>'+
+  '<rect y="162" width="360" height="78" fill="#9A9AA6"/><rect y="162" width="360" height="5" fill="#C8C8D2"/><path d="M0 196H360M0 222H360" stroke="#85858F" stroke-width="2"/><path d="M70 162V240M170 162V240M270 162V240" stroke="#85858F" stroke-width="1" opacity=".5"/>'+
+  /* 紅色電話亭 */
+  '<g transform="translate(40,186)"><rect x="-13" y="-52" width="26" height="52" rx="3" fill="#D42B2B"/><path d="M-13 -52 Q0 -62 13 -52Z" fill="#B91F1F"/><rect x="-9" y="-46" width="18" height="38" fill="#FFE9A0" opacity=".85"/><path d="M-3 -46V-8M3 -46V-8M-9 -36H9M-9 -26H9M-9 -16H9" stroke="#D42B2B" stroke-width="1.6"/><rect x="-11" y="-56" width="22" height="4" fill="#fff"/></g>'+
+  /* 路燈 */
+  '<g transform="translate(330,196)"><rect x="-1.6" y="-62" width="3.2" height="62" fill="#2A2F3F"/><circle cx="0" cy="-66" r="6" fill="#FFE9A0" stroke="#2A2F3F" stroke-width="1.6"/></g>';
+ /* 服裝 */
+ const flame=function(x,y){return '<path d="M'+x+' '+(y-7)+' Q'+(x+4)+' '+(y-1)+' '+x+' '+(y+2)+' Q'+(x-4)+' '+(y-1)+' '+x+' '+(y-7)+'Z" fill="#FF9A1F"/><path d="M'+x+' '+(y-4)+' Q'+(x+2)+' '+(y-1)+' '+x+' '+(y+1)+' Q'+(x-2)+' '+(y-1)+' '+x+' '+(y-4)+'Z" fill="#FFE066"/>'};
+ ACC.new_year_2027_hat=
+  '<rect x="-27" y="-45" width="54" height="15" rx="5" fill="#F6D9A8"/><path d="M-27 -45 H27 V-41 Q22 -37 18 -41 Q14 -35 9 -41 Q4 -35 0 -41 Q-5 -35 -9 -41 Q-14 -35 -18 -41 Q-23 -37 -27 -41Z" fill="#FF8FB8"/>'+
+  '<path d="M-27 -33 H27 V-30 H-27Z" fill="#E7B878"/><circle cx="-18" cy="-36" r="1.6" fill="#FFD24A"/><circle cx="-6" cy="-34" r="1.6" fill="#4FD1FF"/><circle cx="8" cy="-35" r="1.6" fill="#fff"/><circle cx="20" cy="-34" r="1.6" fill="#B388FF"/>'+
+  '<rect x="-19" y="-58" width="38" height="14" rx="4.5" fill="#FFF1C9"/><path d="M-19 -58 H19 V-54 Q15 -50 11 -54 Q7 -49 3 -54 Q-2 -49 -6 -54 Q-10 -49 -14 -54 Q-17 -51 -19 -54Z" fill="#fff"/>'+
+  '<circle cx="0" cy="-60" r="4.2" fill="#E5322D"/><ellipse cx="-1.2" cy="-61.2" rx="1.2" ry="1" fill="#fff" opacity=".7"/>'+
+  [['2',-13.5,'#4FD1FF','#1B7FA6'],['0',-4.5,'#FFD24A','#B8860B'],['2',4.5,'#FF8FB8','#C23B76'],['7',13.5,'#C6A6FF','#6E49B8']].map(function(d){return '<path d="M'+d[1]+' -61 V-58" stroke="#fff" stroke-width="1.5"/>'+dig(d[0],d[1],-70,.34,d[2],d[3],6)+flame(d[1],-82)}).join('');
+ ACC.british_top_hat='<ellipse cx="0" cy="-31" rx="31" ry="7" fill="#1E1E24"/><ellipse cx="0" cy="-32.5" rx="31" ry="5.5" fill="#2E2E38"/>'+
+  '<path d="M-17 -33 L-16 -70 Q0 -76 16 -70 L17 -33 Q0 -28 -17 -33Z" fill="#26262E"/><ellipse cx="0" cy="-70" rx="16" ry="4.6" fill="#35353F"/>'+
+  '<path d="M-17 -33 L-16.5 -43 Q0 -38.5 16.5 -43 L17 -33 Q0 -28 -17 -33Z" fill="#C8202A"/><rect x="-4.5" y="-41.5" width="9" height="9" rx="1.5" fill="none" stroke="#FFD24A" stroke-width="1.8"/>'+
+  '<path d="M-12 -62 Q-12 -52 -11 -46" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" opacity=".28"/>';
+ ACC.big_beard='<g transform="translate(0,-1) scale(.9)"><path d="M-33 -4 Q-37 22 -22 34 Q-10 44 0 40 Q10 44 22 34 Q37 22 33 -4 Q26 12 12 12 Q0 8 -12 12 Q-26 12 -33 -4Z" fill="#6B4423"/>'+
+  '<path d="M-30 -2 Q-33 20 -20 31 Q-10 40 0 36 Q10 40 20 31 Q33 20 30 -2 Q24 14 12 14 Q0 10 -12 14 Q-24 14 -30 -2Z" fill="#855A31"/>'+
+  '<path d="M-22 6 Q-10 12 0 7 Q10 12 22 6 Q12 0 0 3 Q-12 0 -22 6Z" fill="#5A3A1C"/>'+
+  '<path d="M-22 6 Q-30 6 -29 12 Q-25 10 -21 9 M22 6 Q30 6 29 12 Q25 10 21 9" stroke="#5A3A1C" stroke-width="3" fill="none" stroke-linecap="round"/>'+
+  '<path d="M-14 20 Q-10 28 -12 33 M0 22 Q2 30 0 36 M14 20 Q10 28 12 33" stroke="#A67A47" stroke-width="2" fill="none" stroke-linecap="round" opacity=".75"/>'+
+  '<path d="M-6 9 Q0 12 6 9" stroke="#3B2A1A" stroke-width="1.2" fill="none" opacity=".0"/></g>';
+ /* 家具：雙層巴士擺飾 */
+ FUR.double_decker=SH(44)+
+  '<rect x="-42" y="-34" width="84" height="30" rx="4" fill="#D42B2B"/><rect x="-38" y="-62" width="76" height="30" rx="5" fill="#E23A3A"/><rect x="-42" y="-36" width="84" height="4" fill="#A81E1E"/>'+
+  '<g fill="#BFE8F7" stroke="#8FB5C7" stroke-width="1"><rect x="-33" y="-57" width="13" height="14" rx="2"/><rect x="-16" y="-57" width="13" height="14" rx="2"/><rect x="1" y="-57" width="13" height="14" rx="2"/><rect x="18" y="-57" width="15" height="14" rx="2"/><rect x="-36" y="-29" width="12" height="13" rx="2"/><rect x="-20" y="-29" width="12" height="13" rx="2"/><rect x="-4" y="-29" width="12" height="13" rx="2"/></g>'+
+  '<rect x="14" y="-30" width="16" height="26" rx="2" fill="#8E1B1B"/><rect x="17" y="-27" width="10" height="14" fill="#BFE8F7"/><rect x="31" y="-28" width="9" height="11" rx="2" fill="#BFE8F7" stroke="#8FB5C7" stroke-width="1"/>'+
+  '<rect x="-30" y="-69" width="42" height="9" rx="2" fill="#FFD24A"/><path d="M-26 -64.5 H8" stroke="#8E5B00" stroke-width="2" stroke-dasharray="4 2"/>'+
+  '<rect x="-42" y="-8" width="84" height="5" fill="#2A2A32"/><circle cx="-26" cy="-4" r="9" fill="#2A2A32"/><circle cx="-26" cy="-4" r="4" fill="#B7B7C2"/><circle cx="26" cy="-4" r="9" fill="#2A2A32"/><circle cx="26" cy="-4" r="4" fill="#B7B7C2"/>'+
+  '<circle cx="41" cy="-14" r="2.4" fill="#FFE9A0"/>';
+ /* 家具：2027 氣球 */
+ const bal=function(ch,x,y,fill,line,sk){return '<path d="M'+x+' '+(y+20)+' Q'+(x+sk)+' '+(y+44)+' 0 -8" stroke="#B9B9C6" stroke-width="1.2" fill="none"/>'+dig(ch,x,y,1.15,fill,line,9)};
+ FUR.balloons_2027=SH(20)+
+  '<rect x="-12" y="-12" width="24" height="12" rx="2" fill="#2B2A8F"/><rect x="-2" y="-12" width="4" height="12" fill="#FFD24A"/>'+
+  bal('2',-36,-46,'#FFD24A','#B8860B',-8)+bal('0',-12,-62,'#4FD1FF','#1B7FA6',-3)+bal('2',12,-62,'#FF8FB8','#C23B76',3)+bal('7',36,-46,'#C6A6FF','#6E49B8',8);
+})();
+
+
+function sceneSvg(o){
+  const S=[38,104,180,256,322], G=[205,205,190,205,205], sc=LV_SCALE[o.level]||LV_SCALE[1];
+  let h='<svg viewBox="0 0 360 240" role="img" aria-label="寵物房間">'+(BG[o.bg]||BG.bg_none);
+  (o.fur||[]).slice().sort(function(a,b){return a.slot===2?-1:(b.slot===2?1:a.slot-b.slot)}).forEach(function(f){
+    if(FUR[f.key]&&S[f.slot]!==undefined)h+='<g transform="translate('+S[f.slot]+','+G[f.slot]+') scale(.8)">'+FUR[f.key]+'</g>';
+  });
+  const ty=218-39*sc[1];
+  h+='<ellipse cx="180" cy="219" rx="'+(40*sc[0]).toFixed(0)+'" ry="5" fill="#000" opacity=".12"/>';
+  h+='<g transform="translate(180,'+ty.toFixed(1)+')"><g class="'+(o.cls||'bob')+'">'+pet(o)+'</g></g></svg>';
+  return h;
+}
+
+function thumb(i){
+  const k=i.drawKey, c=i.category;
+  if(c==='food')return '<svg viewBox="-50 -80 100 90">'+(FOOD[k]||'')+'</svg>';
+  if(c==='furniture')return '<svg viewBox="-60 -92 120 102">'+(FUR[k]||'')+'</svg>';
+  if(c==='background')return '<svg viewBox="0 0 360 240">'+(BG[k]||BG.bg_none)+'</svg>';
+  return '<svg viewBox="-62 -82 124 130">'+pet({flat:true,mood:'happy',acc:[k]})+'</svg>';
+}
+function petThumb(type,level,mood){return '<svg viewBox="-84 -76 168 136" role="img">'+'<g transform="scale(1.1)">'+pet({type:type||'cat',flat:true,level:level||3,mood:mood||'happy',acc:[]})+'</g></svg>'}
+function growThumb(type,level){return '<svg viewBox="-122 -96 244 160" role="img">'+pet({type:type||'cat',level:level,mood:'happy',acc:[]})+'</svg>'}
+</script>
+<script>
+let P=null,pickedType='cat',shopCat='food',confirmId='',buyQty={},coinList=[],levelMsg='',eatTimer=null,cancelAsk='',taskFilter='all';
+const CATN={food:'飼料',costume:'服裝',background:'背景',furniture:'傢具'};
+const SLOTN={hat:'帽子',neck:'頸部',face:'臉部',back:'披風'};
+const MOOD={normal:'心情平穩',happy:'開心',hungry:'肚子餓了',sleepy:'想睡覺（好久沒來了）',sad:'難過（太久沒餵了）',eating:'吃東西中'};
+function item(id){return P.items.find(function(i){return i.itemId===id})}
+function invQty(id){const r=P.inv.find(function(i){return i.itemId===id});return r?Number(r.quantity):0}
+function keyOf(id){const i=id&&item(id);return i?i.drawKey:''}
+function stageOf(lv){return P.levels.find(function(l){return l.level===lv})||P.levels[0]}
+async function loadPet(touch){P=await call('petState',{touch:!!touch});me.balance=P.balance}
+function sceneOf(){
+  const p=P.pet,e=p.equipped;
+  return sceneSvg({type:p.type,level:p.level,mood:p.mood,cls:p.mood==='eating'?'hop':'bob',
+    acc:[keyOf(e.hat),keyOf(e.neck),keyOf(e.face),keyOf(e.back)].filter(Boolean),
+    bg:keyOf(p.backgroundId)||'bg_none',
+    fur:P.layout.map(function(l){return {key:keyOf(l.itemId),slot:Number(l.posX)}})});
+}
+function setP(r){P=r;me.balance=r.balance;fresh.coins=0}
+
+/* ---------- 主畫面結構 ---------- */
+function mainHtml(){
+  if(!P)return '<div class="empty">載入中…</div>';
+  if(!P.pet)return adoptHtml();
+  const T=[
+    ['pet',ic('cat',18)+' 我的寵物'],
+    ['tasks',ic('task',18)+' 任務牆'],
+    ['new',ic('task',18)+' 派發任務'],
+    ['family',ic('cat',18)+' 家庭寵物牆'],
+    ['shop',ic('cart',18)+' 道具商店'],
+    ['bag',ic('bag',18)+' 百寶背包'],
+    ['coins',ic('coin',18)+' 金幣紀錄']
+  ];
+  const views={
+    pet:petTab,
+    tasks:function(){return taskListView()},
+    new:newHtml,
+    family:familyView,
+    shop:shopTab,
+    bag:bagTab,
+    coins:coinsTab
+  };
+  return '<div class="tabs">'+T.map(function(x){return '<button class="'+(tab===x[0]?'on':'')+'" onclick="cTab(\''+x[0]+'\')">'+x[1]+'</button>'}).join('')+'</div>'+
+    (levelMsg?'<div class="banner">'+levelMsg+'</div>':'')+(views[tab]||petTab)();
+}
+function cTab(t){act(async function(){tab=t;confirmId='';cancelAsk='';if(['tasks','coins','family','new'].indexOf(t)>=0)await ensure(t);render()})}
+
+/* ---------- 領養（可選擇不同動物） ---------- */
+const ANIMALS=[
+ {k:'cat',n:'貓咪',d:'黏人又愛撒嬌，開心時會瞇起眼睛笑。'},
+ {k:'raccoon',n:'浣熊',d:'戴著黑眼罩的小怪盜，機靈又好奇。'},
+ {k:'guinea_pig',n:'天竺鼠',d:'圓滾滾軟綿綿，超級療癒。'},
+ {k:'lion',n:'獅子',d:'毛茸茸的小獸王，充滿自信。'},
+ {k:'parrot',n:'鸚鵡',d:'橘色的小腦袋配上綠色羽毛，色彩繽紛。'},
+ {k:'koala',n:'無尾熊',d:'灰灰軟軟的樹熊，總是慢吞吞的很可愛。'}
+];
+function adoptHtml(){
+  const a=ANIMALS.find(function(x){return x.k===pickedType})||ANIMALS[0];
+  return '<div class="card auth" style="max-width:520px"><h2 style="text-align:center;font-size:1.1rem;margin:0 0 4px">領養你的第一隻寵物！</h2><div class="meta" style="text-align:center;margin-bottom:10px">先選一種動物，牠長大後會變成什麼樣子，就留給你慢慢發現吧！</div>'+
+    '<div class="pickgrid">'+ANIMALS.map(function(x){return '<button type="button" class="pick'+(x.k===pickedType?' on':'')+'" aria-pressed="'+(x.k===pickedType)+'" onclick="pickAnimal(\''+x.k+'\')"><div class="th">'+petThumb(x.k,3,'happy')+'</div><span>'+x.n+'</span></button>'}).join('')+'</div>'+
+    '<div class="meta" style="margin-bottom:6px">'+esc(a.d)+'</div>'+
+    '<label>幫牠取個好名字<input id="pn2" maxlength="12" value="我的寵物"></label>'+
+    '<button class="pri" style="width:100%" onclick="adopt()">確定領養'+esc(a.n)+'（附贈 3 份美味飼料）</button></div>';
+}
+function pickAnimal(k){const el=$('pn2'),v=el?el.value:'';pickedType=k;render();if($('pn2'))$('pn2').value=v}
+function adopt(){act(async function(){setP(await call('adopt',{type:pickedType,name:$('pn2').value||'我的寵物'}));tab='pet';render()})}
+
+/* ---------- 寵物 ---------- */
+function saleBoard(){
+  if(!P||!P.sales||!P.sales.length)return '';
+  return '<div class="board" role="region" aria-label="特價活動"><div class="bulb"></div><div class="bin"><span class="bhead">SALE 特價中</span>'+P.sales.map(function(s){
+    const a=md(s.startDate),b=md(s.endDate),d=a&&b?(a===b?a:a+'～'+b):(b?'至 '+b:'自 '+a+' 起');
+    return '<div class="brow"><span class="bd">'+d+'</span><span class="bn">'+esc(s.name)+'</span><span class="bi">'+esc(s.catNames.join('、'))+'</span><span class="bo">'+s.discount+'% OFF</span></div>'
+  }).join('')+'</div><div class="bulb"></div></div>';
+}
+function offTag(i){return i.discount>0?'<span class="off">'+i.discount+'% OFF</span>':''}
+function priceHtml(i){return i.discount>0?'<span class="was">'+i.price+'</span><span class="nowp">'+i.salePrice+'</span>':String(i.price)}
+function petTab(){
+  const p=P.pet,lv=stageOf(p.level),next=P.levels.find(function(l){return l.level===p.level+1});
+  const pct=next?Math.min(100,Math.round((p.exp-lv.expRequired)/(next.expRequired-lv.expRequired)*100)):100;
+  const foods=P.items.filter(function(i){return i.category==='food'&&invQty(i.itemId)>0});
+  const fh=foods.length?'<div class="foods">'+foods.map(function(i){return '<button onclick="feed(\''+i.itemId+'\')">'+thumb(i)+'<span>'+esc(i.name)+' ×'+invQty(i.itemId)+'</span></button>'}).join('')+'</div>':
+    '<div class="meta">背包裡沒有飼料了，快去完成任務賺取金幣，再來商店選購吧！</div><button class="pri" onclick="cTab(\'shop\')">前往商店</button>';
+  return saleBoard()+'<div class="two"><div class="card sc">'+sceneOf()+'</div><div class="card"><div class="top"><b style="font-size:1.1rem">'+esc(p.name)+'</b><span class="chip">Lv.'+p.level+' '+esc(lv.stageName)+'</span></div>'+
+    '<div class="meta">成長經驗 '+p.exp+(next?' / '+next.expRequired:'（已達最高等級）')+'</div><div class="bar"><i style="width:'+pct+'%"></i></div>'+
+    '<div class="meta">目前體重 '+p.weight+' 公斤 ・ 狀態：'+(MOOD[p.mood]||'')+'</div><div class="meta">今日已餵食 '+P.feedsToday+' / '+P.feedLimit+' 次</div><h3 style="font-size:1rem;margin:12px 0 8px">餵食夥伴</h3>'+fh+'</div></div>';
+}
+function feed(id){act(async function(){
+  const r=await call('feed',{itemId:id});setP(r);P.pet.mood='eating';
+  if(r.fed&&r.fed.leveledUp){levelMsg=ic('star',20)+' 太棒了！'+esc(P.pet.name)+' 升級為 Lv.'+r.fed.newLevel+' '+esc(r.fed.stageName)+'！';setTimeout(function(){levelMsg='';if(me)render()},5000)}
+  render();clearTimeout(eatTimer);
+  eatTimer=setTimeout(function(){if(P&&P.pet){P.pet.mood='happy';if(tab==='pet'||tab==='bag')render()}},1800);
+})}
+
+/* ---------- 商店 ---------- */
+function md(d){const m=String(d||'').match(/^\d{4}-(\d{2})-(\d{2})$/);return m?(+m[1])+'/'+(+m[2]):''}
+function ltdBadge(i){return i.limited?'<span class="ltd">期間限定</span>':''}
+function ltdLine(i){
+  if(!i.limited)return '';
+  let t=i.availableFrom&&i.availableUntil?'販售期間 '+md(i.availableFrom)+'～'+md(i.availableUntil):(i.availableUntil?'販售至 '+md(i.availableUntil):'自 '+md(i.availableFrom)+' 起販售');
+  if(i.daysLeft!==null&&i.daysLeft<=3)t+='・'+(i.daysLeft===0?'今天結束！':'剩 '+(i.daysLeft+1)+' 天');
+  return '<div class="ltdl">'+t+'</div>';
+}
+function shopTab(){
+  const cats=Object.keys(CATN);
+  return '<div class="tabs sub">'+cats.map(function(c){return '<button class="'+(shopCat===c?'on':'')+'" onclick="shopCat=\''+c+'\';confirmId=\'\';render()">'+CATN[c]+'</button>'}).join('')+'</div>'+
+    '<div class="meta" style="margin-bottom:8px">目前擁有金幣：'+ic('coin',16)+' '+P.balance+'</div><div class="grid4">'+P.items.filter(function(i){return i.category===shopCat&&i.forSale}).map(shopCard).join('')+'</div>';
+}
+function qtyOf(id){return buyQty[id]||1}
+function setQty(id,n){n=Math.max(1,Math.min(10,n));if((buyQty[id]||1)===n)return;buyQty[id]=n;confirmId='';render()}
+function shopCard(i){
+  const own=invQty(i.itemId),food=i.category==='food',q=food?qtyOf(i.itemId):1,unit=i.discount>0?i.salePrice:i.price,cost=unit*q;let btn,qsel='';
+  if(food)qsel='<div class="qty" role="group" aria-label="購買數量"><button aria-label="減少" onclick="setQty(\''+i.itemId+'\','+(q-1)+')"'+(q<=1?' disabled':'')+'>−</button><span class="qn" aria-live="polite">'+q+'</span><button aria-label="增加" onclick="setQty(\''+i.itemId+'\','+(q+1)+')"'+(q>=10?' disabled':'')+'>+</button></div>';
+  if(!food&&own)btn='<button disabled>已擁有</button>';
+  else if(P.pet.level<i.requiredLevel)btn='<button disabled>'+ic('lock',16)+' Lv.'+i.requiredLevel+' 解鎖</button>';
+  else if(P.balance<cost)btn='<button disabled>金幣不足'+(q>1?'（需 '+cost+'）':'')+'</button>';
+  else btn=confirmId===i.itemId?'<button class="ok" onclick="buy(\''+i.itemId+'\')">再按一次確認'+(q>1?' ×'+q+'（'+cost+' 金幣）':'')+'</button>':'<button class="pri" onclick="confirmId=\''+i.itemId+'\';render()">購買'+(q>1?' ×'+q:'')+'</button>';
+  return '<div class="card item"><div class="th">'+thumb(i)+ltdBadge(i)+offTag(i)+'</div><b>'+esc(i.name)+'</b><div class="meta">'+ic('coin',14)+' '+priceHtml(i)+(food?'・+'+i.expGain+' 經驗'+(i.weightGain?'・+'+i.weightGain+' 公斤':'')+(own?'・持有 '+own:''):'')+'</div>'+ltdLine(i)+qsel+btn+'</div>';
+}
+function buy(id){act(async function(){const it=P.items.filter(function(x){return x.itemId===id})[0],q=(it&&it.category==='food')?qtyOf(id):1;setP(await call('buy',{itemId:id,qty:q}));confirmId='';delete buyQty[id];toast(q>1?'購買成功！已買 '+q+' 個':'購買成功！');render()})}
+
+/* ---------- 背包 ---------- */
+function bagTab(){
+  const e=P.pet.equipped,mine=function(c){return P.items.filter(function(i){return i.category===c&&invQty(i.itemId)>0})};
+  const costumes=mine('costume'),bgs=mine('background'),furs=mine('furniture');
+  let h='<div class="card sc" style="max-width:520px;margin:0 auto 12px">'+sceneOf()+'</div>';
+  h+='<h3 class="sec">服裝造型</h3>'+(costumes.length?'<div class="grid4">'+costumes.map(function(i){
+    const on=e[i.slot]===i.itemId;
+    return '<div class="card item"><div class="th">'+thumb(i)+ltdBadge(i)+'</div><b>'+esc(i.name)+'</b><div class="meta">'+(SLOTN[i.slot]||'')+'</div><button class="'+(on?'':'pri')+'" onclick="equip(\''+i.itemId+'\',\''+i.slot+'\','+on+')">'+(on?'卸下':'穿上')+'</button></div>';
+  }).join('')+'</div>':'<div class="meta">尚無服裝，快去商店逛逛吧！</div>');
+  const curBg=P.pet.backgroundId||'';
+  h+='<h3 class="sec">背景場景</h3><div class="grid4">'+[{itemId:'',name:'預設房間',category:'background',drawKey:'bg_none'}].concat(bgs).map(function(i){
+    const on=curBg===i.itemId;
+    return '<div class="card item"><div class="th">'+thumb(i)+ltdBadge(i)+'</div><b>'+esc(i.name)+'</b><button class="'+(on?'':'pri')+'" '+(on?'disabled':'')+' onclick="setBg(\''+i.itemId+'\')">'+(on?'使用中':'套用')+'</button></div>';
+  }).join('')+'</div>';
+  const placed={};P.layout.forEach(function(l){placed[l.itemId]=true});
+  h+='<h3 class="sec">溫馨傢俱（已擺放 '+P.layout.length+' / 5）</h3>'+(furs.length?'<div class="grid4">'+furs.map(function(i){
+    const on=placed[i.itemId];
+    return '<div class="card item"><div class="th">'+thumb(i)+ltdBadge(i)+'</div><b>'+esc(i.name)+'</b>'+(on?'<div class="row" style="margin:0"><button onclick="lay(\''+i.itemId+'\',\'left\')" aria-label="往左移">'+ic('left',18)+'</button><button onclick="lay(\''+i.itemId+'\',\'right\')" aria-label="往右移">'+ic('right',18)+'</button></div><button onclick="lay(\''+i.itemId+'\',\'remove\')">收起</button>':'<button class="pri" onclick="lay(\''+i.itemId+'\',\'place\')">擺放</button>')+'</div>';
+  }).join('')+'</div>':'<div class="meta">尚無傢俱，快去商店選購佈置您的房間！</div>');
+  return h;
+}
+function equip(id,slot,on){act(async function(){setP(await call('equip',on?{slot:slot}:{itemId:id}));render()})}
+function setBg(id){act(async function(){setP(await call('setBg',{itemId:id}));render()})}
+function lay(id,op){act(async function(){setP(await call('layout',{itemId:id,op:op}));render()})}
+
+/* ---------- 金幣紀錄 ---------- */
+function coinsTab(){
+  const T={task_reward:'任務獎勵',purchase:'商店消費',adjust:'管理調整'};
+  return '<div class="card">目前金幣總額：<b style="font-size:1.3rem;display:inline-flex;align-items:center;gap:6px">'+ic('coin',22)+' '+P.balance+'</b></div>'+(coinList.length?'<div class="card scroll"><table><thead><tr><th>時間</th><th>項目</th><th>金額</th><th>結餘</th></tr></thead><tbody>'+coinList.map(function(c){
+    const a=Number(c.amount);
+    return '<tr><td>'+esc(String(c.createdAt).slice(0,16))+'</td><td>'+esc(c.note||T[c.type]||'')+'</td><td style="color:'+(a>=0?'var(--ok)':'var(--no)')+';font-weight:700">'+(a>0?'+':'')+a+'</td><td>'+esc(c.balanceAfter)+'</td></tr>';
+  }).join('')+'</tbody></table></div>':'<div class="empty">目前尚無金幣收支紀錄</div>');
+}
+
+/* ---------- 派發任務介面 ---------- */
+function newHtml(){
+  const targets = members.filter(c => c.userId !== me.userId);
+  if(!targets.length) return '<div class="card empty">目前家庭中沒有其他成員可供指派任務</div>';
+  return '<div class="card" style="max-width:520px"><label>任務名稱<input id="tt" maxlength="60" placeholder="例如：收拾房間、倒垃圾"></label><label>任務詳細說明<textarea id="td" rows="3" maxlength="500" placeholder="補充說明細節或注意事項"></textarea></label><label>指派給誰<select id="ta">'+targets.map(c=>'<option value="'+c.userId+'">'+esc(c.name)+'</option>').join('')+'</select></label><label>完成可獲得金幣（上限 '+MAXR()+'）<input id="tr" type="number" inputmode="numeric" min="0" max="'+MAXR()+'" value="'+Math.min(10,MAXR())+'"></label><label>截止日期（選填）<input id="tdu" type="date"></label><button class="pri" style="width:100%" onclick="sendTask()">確認派發並發送通知信</button></div>';
+}
+function MAXR(){return (P&&P.maxTaskReward)||9999}
+function sendTask(){act(async function(){if(Number($('tr').value)>MAXR())throw new Error('任務金幣不能超過 '+MAXR()+' 金幣');const d=await call('createTask',{title:$('tt').value,description:$('td').value,assigneeId:$('ta').value,reward:$('tr').value,dueDate:$('tdu').value});toast('任務已成功派發！');tasks=d.tasks;fresh.tasks=Date.now();tab='tasks';render()})}
+
+/* ---------- 家庭成員寵物牆 ---------- */
+function familyView(){
+  const cards=members.map(function(k){
+    const p=k.pet;
+    const isMgr=(me.role==='parent');
+    return '<div class="card"><div class="top"><b>'+ic('cat',20)+' '+esc(k.name)+'</b><span class="chip">'+ic('coin',16)+' '+k.balance+'</span></div><div class="meta">身分：'+(k.role==='parent'?'家長':'小孩')+' ・ 已完成任務 '+k.done+' 項</div>'+
+    (p?'<div class="sc">'+sceneSvg({type:p.type,level:p.level,mood:p.mood,acc:p.acc,bg:p.bg,fur:p.fur})+'</div><div class="meta">「'+esc(p.name)+'」Lv.'+p.level+' '+esc(p.stageName)+'・'+p.weight+' 公斤・'+(MOOD[p.mood]||'')+'</div>':'<div class="meta">尚未領養寵物</div>')+
+    (isMgr?'<label style="margin-top:12px">手動調整金幣（獎勵填正數、扣除填負數）<input id="ad_'+k.userId+'" type="number" inputmode="numeric"></label><label>調整原因（選填）<input id="an_'+k.userId+'" maxlength="40"></label>'+(cancelAsk==='adj_'+k.userId?'<button class="ok" style="width:100%" onclick="adjust(\''+k.userId+'\')">再按一次確認調整</button>':'<button class="pri" style="width:100%" onclick="adjust(\''+k.userId+'\')">確認調整金幣</button>')+'':'')+
+    '</div>';
+  }).join('');
+  
+  const mgrSec=(me.role==='parent')?'<div class="card"><b>新增家庭成員</b><label>成員名稱<input id="mn" maxlength="20"></label><label>家庭身分<select id="mr"><option value="child">小孩</option><option value="parent">家長（具備管理員權限）</option></select></label><label>登入 PIN 碼（4–8 位數字）<input id="mp" type="password" inputmode="numeric"></label><label>通知信箱（選填）<input id="me_mail" type="email"></label><button class="pri" style="width:100%" onclick="addMember()">新增成員</button></div>':'';
+
+  return '<div class="card">家庭專屬代號：<b style="font-size:1.2rem;letter-spacing:2px">'+esc(me.familyCode)+'</b><div class="meta">登入時需輸入「家庭代號 + 名稱 + PIN 碼」。</div><div class="meta" style="user-select:all;word-break:break-all">快速登入連結：'+esc(me.loginUrl)+'</div></div>'+
+    '<div class="grid">'+cards+mgrSec+'</div>';
+}
+function adjust(id){if(!Number($('ad_'+id).value)){toast('請填寫要調整的金幣數量',true);return}if(askOnce('adj_'+id))return;act(async function(){const d=await call('adjustCoins',{memberId:id,amount:$('ad_'+id).value,note:$('an_'+id).value});toast('金幣已成功調整');members=d.members;fresh.members=Date.now();render()})}
+function addMember(){act(async function(){const d=await call('addMember',{name:$('mn').value,role:$('mr').value,pin:$('mp').value,email:$('me_mail').value});toast('新成員已加入');me=d.me;members=d.members;fresh.members=Date.now();render()})}
+
+/* ---------- 任務列表（含 Filter 篩選器與完整 Note 顯示）---------- */
+const ST={assigned:'待完成',submitted:'待審核',approved:'已通過',rejected:'已退回',assignee_rejected:'執行者已拒絕',cancelled:'已取消'};
+
+function taskListView(){
+  let filtered = tasks;
+  if(taskFilter === 'assigned_to_me'){
+    filtered = tasks.filter(t => t.assigneeId === me.userId);
+  } else if(taskFilter === 'created_by_me'){
+    filtered = tasks.filter(t => t.createdById === me.userId);
+  }
+
+  const filterBtns = [
+    ['all', '全部任務'],
+    ['assigned_to_me', '派給我的任務'],
+    ['created_by_me', '自己派出的任務']
+  ];
+
+  let h = '<div class="tabs sub" style="margin-bottom:12px;">' +
+    filterBtns.map(f => '<button class="'+(taskFilter===f[0]?'on':'')+'" onclick="setTaskFilter(\''+f[0]+'\')">'+f[1]+'</button>').join('') +
+    '</div>';
+
+  if(!filtered.length){
+    h += '<div class="empty">目前沒有符合條件的任務</div>';
+  } else {
+    h += '<div class="grid">'+filtered.map(t=>taskCard(t)).join('')+'</div>';
+  }
+  return h;
+}
+
+function setTaskFilter(f){
+  taskFilter = f;
+  cancelAsk = '';
+  render();
+}
+
+function cbtn(key,fn,label,confirmLabel,confirmCls,idleCls){
+  return cancelAsk===key?'<button class="'+(confirmCls||'no')+'" onclick="'+fn+'">'+confirmLabel+'</button>':'<button'+(idleCls?' class="'+idleCls+'"':'')+' onclick="'+fn+'">'+label+'</button>';
+}
+function keepRender(){const v={};document.querySelectorAll('#app textarea,#app input,#app select').forEach(function(e){if(e.id)v[e.id]=e.value});render();Object.keys(v).forEach(function(k){const e=$(k);if(e)e.value=v[k]})}
+function askOnce(key){if(cancelAsk===key){cancelAsk='';return false}cancelAsk=key;keepRender();return true}
+function taskCard(t){
+  let a='';
+  const isAssignee=(t.assigneeId===me.userId);
+  const isCreator=(t.createdById===me.userId);
+  const isParent=(me.role==='parent');
+  const isSelfAssigned = isAssignee;
+  const cardClass = isSelfAssigned ? 'card self-task' : 'card';
+  const selfBadge = isSelfAssigned ? '<span class="b self-badge">派給自己</span>' : '';
+
+  if(isAssignee){
+    if(t.status==='assigned'||t.status==='rejected'){
+      a+='<textarea id="nt_'+t.taskId+'" rows="2" placeholder="想跟指派者說的話（選填）"></textarea>'+
+         '<div class="row"><button class="ok" onclick="submitTask(\''+t.taskId+'\')">完成並提交任務！</button></div>';
+      a+='<textarea id="rj_'+t.taskId+'" rows="2" placeholder="拒絕理由（拒絕時必須填寫）" style="margin-top:8px"></textarea>'+
+         '<div class="row">'+cbtn('rj_'+t.taskId,'rejectTaskAssignee(\''+t.taskId+'\')','拒絕此任務','再按一次確認拒絕')+'</div>';
+    }
+  }
+
+  if(isCreator){
+    if(t.status==='submitted'){
+      a+='<textarea id="rs_'+t.taskId+'" rows="2" placeholder="退回原因（退回時必須填寫）"></textarea>'+
+         '<div class="row"><button class="ok" onclick="review(\''+t.taskId+'\',true)">審核通過</button><button class="no" onclick="review(\''+t.taskId+'\',false)">退回修改</button></div>';
+    }
+    if(t.status==='assignee_rejected'){
+      a+='<div class="row">'+cbtn('ag_'+t.taskId,'reviewReject(\''+t.taskId+'\',true)','同意中止任務','再按一次確認中止')+'<button class="no" onclick="reviewReject(\''+t.taskId+'\',false)">否決（要求繼續執行）</button></div>';
+    }
+    if(['assigned','rejected','submitted','assignee_rejected'].indexOf(t.status)>=0){
+      a+='<div class="row">'+cbtn('c_'+t.taskId,'cancelTask(\''+t.taskId+'\')','取消任務','再按一次確認取消')+'</div>';
+    }
+  }
+
+  if(isParent && !isCreator && ['assigned','rejected','submitted','assignee_rejected'].indexOf(t.status)>=0){
+    a+='<textarea id="fc_'+t.taskId+'" rows="2" placeholder="強制中止理由（家長身分必填）" style="margin-top:8px"></textarea>'+
+       '<div class="row">'+cbtn('fc_'+t.taskId,'forceCancelTask(\''+t.taskId+'\')','家長強制中止','再按一次確認強制中止')+'</div>';
+  }
+
+  return '<div class="'+cardClass+'"><div class="top"><b>'+esc(t.title)+'</b><div><span class="b '+t.status+'">'+(ST[t.status]||t.status)+'</span>'+selfBadge+'</div></div>'+
+  (t.description?'<div>'+esc(t.description)+'</div>':'')+
+  '<div class="meta">執行者：'+esc(t.assigneeName)+' ・ 發起人：'+esc(t.createdByName||'家人')+'<br>'+ic('coin',14)+' 獎勵：'+t.reward+' 金幣'+(t.dueDate?' ・ 期限：'+esc(String(t.dueDate).slice(0,10)):'')+'</div>'+
+  (t.submitNote?'<div class="meta" style="color:var(--ok)"><b>執行留言：</b>'+esc(t.submitNote)+'</div>':'')+
+  (t.rejectReason?'<div class="warn"><b>相關備註/理由：</b>'+esc(t.rejectReason)+'</div>':'')+a+'</div>';
+}
+
+function submitTask(id){act(async()=>{const d=await call('submitTask',{taskId:id,note:$('nt_'+id).value});toast('已成功提交任務！');tasks=d.tasks;fresh.tasks=Date.now();render()})}
+function rejectTaskAssignee(id){if(!$('rj_'+id).value.trim()){toast('拒絕任務必須填寫理由',true);return}if(askOnce('rj_'+id))return;act(async()=>{const d=await call('rejectTaskAssignee',{taskId:id,reason:$('rj_'+id).value});toast('已拒絕此任務');tasks=d.tasks;fresh.tasks=Date.now();render()})}
+function review(id,ok){act(async()=>{const d=await call('reviewTask',{taskId:id,approve:ok,reason:$('rs_'+id).value});toast(ok?'審核通過，金幣已發放！':'已退回任務');tasks=d.tasks;fresh.tasks=Date.now();render()})}
+function reviewReject(id,agree){if(agree&&askOnce('ag_'+id))return;cancelAsk='';act(async()=>{const d=await call('reviewReject',{taskId:id,agree:agree});toast(agree?'已同意中止任務':'已否決，任務將繼續進行');tasks=d.tasks;fresh.tasks=Date.now();render()})}
+function cancelTask(id){
+  if(askOnce('c_'+id))return;
+  act(async()=>{const d=await call('cancelTask',{taskId:id});toast('任務已取消');tasks=d.tasks;fresh.tasks=Date.now();render()});
+}
+function forceCancelTask(id){if(!$('fc_'+id).value.trim()){toast('強制中止必須填寫理由',true);return}if(askOnce('fc_'+id))return;act(async()=>{const d=await call('forceCancelTask',{taskId:id,reason:$('fc_'+id).value});toast('已由家長強制中止任務');tasks=d.tasks;fresh.tasks=Date.now();render()})}
+</script>
+<script>
+let token=lsGet('tk'),me=null,tab='pet',tasks=[],members=[],fresh={},regMode=false,pending=0;
+const $=id=>document.getElementById(id);
+function lsGet(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function busy(d){pending=Math.max(0,pending+d);$('loading').className=pending>0?'on':''}
+async function call(a,p){
+  if(!API_URL)throw new Error('尚未設定後端網址：請在 config.js 填入 API_URL');
+  busy(1);
+  try{
+    let r;
+    try{
+      const res=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({action:a,payload:p||{},token:token})});
+      r=await res.json();
+    }catch(e){throw new Error('無法連線到伺服器，請檢查網路後再試')}
+    if(r&&r.newToken){token=r.newToken;lsSet('tk',token)}
+    if(r&&r.ok)return r.data;
+    throw new Error((r&&r.error)||'伺服器沒有回應');
+  }finally{busy(-1)}
+}
+function toast(m,err){const t=$('toast');t.textContent=m;t.className='show'+(err?' err':'');clearTimeout(toast.h);toast.h=setTimeout(()=>t.className='',3000)}
+function act(fn){return fn().catch(e=>{const m=e.message||String(e);toast(m,true);if(/登入已過期/.test(m))logout()})}
+
+let helpOpen=false;
+function showHelp(){helpOpen=true;me?render():authView();window.scrollTo(0,0)}
+function closeHelp(){helpOpen=false;me?render():authView();window.scrollTo(0,0)}
+let helpTab='';
+function setHelpTab(k){helpTab=k;me?render():authView()}
+function helpHtml(){
+  const ua=navigator.userAgent;
+  const k=helpTab||(/iPhone|iPad|iPod/.test(ua)?'ios':/Android/.test(ua)?'and':/Mobi/.test(ua)?'ios':'pc');
+  const D={
+    ios:[['用 Safari 打開網站','要用 Safari，其他瀏覽器可能看不到「加入主畫面」。'],['按下方的「分享」鈕','方形加上向上箭頭的圖示，在畫面最下方（iPad 在右上方）。'],['往下滑，選「加入主畫面」','找不到的話，在選單最底下按「編輯行動」。'],['按右上角「加入」','桌面就會出現貓咪圖示，完成！']],
+    and:[['用 Chrome 打開網站','建議使用 Chrome。'],['按右上角的「選單」','三個點的圖示。'],['選「加到主畫面」或「安裝應用程式」','不同手機的字樣可能略有不同。'],['按「新增」或「安裝」','桌面就會出現貓咪圖示，完成！']],
+    pc:[['用 Chrome 或 Edge 打開網站','Safari 與 Firefox 的電腦版不支援安裝。'],['按網址列右側的「安裝」圖示','沒看到的話，到右上角選單選「安裝應用程式」。'],['按「安裝」','桌面和開始選單就會出現捷徑，完成！']]
+  };
+  const T=[['ios','iPhone'],['and','Android'],['pc','電腦']];
+  const tabs='<div class="tabs" style="margin-bottom:12px">'+T.map(function(t){return '<button class="'+(t[0]===k?'on':'')+'" onclick="setHelpTab(\''+t[0]+'\')">'+t[1]+'</button>'}).join('')+'</div>';
+  const steps=D[k].map(function(s,n){return '<div class="card" style="display:flex;gap:12px;align-items:flex-start"><span class="chip" style="flex:none;width:32px;height:32px;padding:0;justify-content:center">'+(n+1)+'</span><div><b>'+s[0]+'</b><div class="meta" style="margin:2px 0 0">'+s[1]+'</div></div></div>'}).join('');
+  return '<div class="top" style="margin-bottom:10px"><h2 style="font-size:1.15rem;margin:0;display:flex;align-items:center;gap:8px">'+ic('help',24)+' 使用說明：加到桌面</h2><button onclick="closeHelp()">'+ic('left',18)+' 返回</button></div>'+
+  '<div class="meta" style="margin-bottom:10px">把樂園加到桌面，之後點圖示就能直接打開。請選擇你使用的裝置：</div>'+tabs+steps+
+  '<div class="meta" style="margin:6px 0 10px">小提醒：桌面圖示和瀏覽器的登入狀態是分開的，第一次從桌面打開時要登入一次，之後就會記住。</div>'+
+  '<div class="row"><button class="pri" onclick="closeHelp()">我知道了</button></div>';
+}
+
+function authView(){
+  me=null;$('hd').innerHTML='<h1>'+ic('cat',28)+' 家事寵物樂園</h1>';
+  const can=!!CFG&&String(CFG.showCreateFamily).trim().toLowerCase()==='true';if(!can)regMode=false;
+  if(helpOpen){$('app').innerHTML=helpHtml();return}
+  $('app').innerHTML='<div class="card auth">'+(regMode?
+  '<h2 style="font-size:1.1rem;margin:0 0 12px">建立新家庭</h2><label>家庭名稱<input id="fn" placeholder="例如：快樂小家庭"></label><label>您的名稱（家長）<input id="nm" placeholder="例如：爸爸、媽媽"></label><label>通知信箱<input id="em" type="email" placeholder="接收任務通知"></label><label>登入 PIN 碼（4–8 位數字）<input id="pn" type="password" inputmode="numeric" autocomplete="new-password"></label><button class="pri" style="width:100%" onclick="doRegister()">建立家庭並登入</button><button style="width:100%;margin-top:8px" onclick="regMode=false;authView()">返回登入頁面</button>':
+  '<label>家庭專屬代號<input id="fc" value="'+esc(CFG.familyCode||lsGet('fc'))+'" autocapitalize="characters" autocomplete="off" placeholder="6碼代號"></label><label>您的名稱<input id="nm" value="'+esc(lsGet('nm'))+'" autocomplete="username" autocapitalize="off" placeholder="輸入名字"></label><label>PIN 碼<input id="pn" type="password" inputmode="numeric" autocomplete="current-password" placeholder="輸入數字密碼"></label><button class="pri" style="width:100%" onclick="doLogin()">登入樂園</button>'+(can?'<button style="width:100%;margin-top:8px" onclick="regMode=true;authView()">建立新家庭</button>':''))+'<button style="width:100%;margin-top:8px" onclick="showHelp()">'+ic('help',18)+' 使用說明</button></div>';
+  ['fc','nm','pn'].forEach(id=>{const e=$(id);if(e)e.addEventListener('keydown',ev=>{if(ev.key==='Enter')(regMode?doRegister:doLogin)()})});
+}
+function enter(d,nm,fc){token=d.token;lsSet('tk',token);lsSet('nm',nm);if(fc)lsSet('fc',fc);applyBoot(d.boot)}
+function doLogin(){act(async()=>{const fc=$('fc').value.trim().toUpperCase(),nm=$('nm').value.trim();enter(await call('login',{familyCode:fc,name:nm,pin:$('pn').value}),nm,fc)})}
+function doRegister(){act(async()=>{const nm=$('nm').value.trim();const d=await call('register',{familyName:$('fn').value,name:nm,email:$('em').value,pin:$('pn').value});enter(d,nm,d.boot.me.familyCode)})}
+function resetState(){helpOpen=false;regMode=false;me=null;P=null;tasks=[];members=[];coinList=[];fresh={};tab='pet';levelMsg='';confirmId='';cancelAsk='';taskFilter='all';pickedType='cat';pending=0;busy(0)}
+function logout(){token='';lsSet('tk','');resetState();authView()}
+function applyBoot(d){me=d.me;tasks=d.tasks||[];P=d.pet;members=[];coinList=[];me.balance=P?P.balance:0;tab='pet';fresh={tasks:Date.now()};render()}
+async function boot(){applyBoot(await call('boot',{touch:true}))}
+
+async function ensure(k,force){
+  if(k==='family'||k==='new')k='members';
+  if(!force&&fresh[k]&&Date.now()-fresh[k]<20000)return;
+  const mapAct={tasks:['listTasks',d=>tasks=d],members:['listMembers',d=>members=d],coins:['listCoins',d=>coinList=d]};
+  if(mapAct[k]){
+    const actInfo=mapAct[k];
+    actInfo[1](await call(actInfo[0]));
+    fresh[k]=Date.now();
+  }
+}
+
+function render(){
+  $('hd').innerHTML='<h1>'+ic('cat',28)+' 家事寵物樂園</h1><div class="who"><span class="chip">'+ic('coin',16)+' '+me.balance+'</span><span>'+esc(me.name)+'（'+(me.role==='parent'?'家長':'小孩')+'）</span><button onclick="showHelp()" aria-label="使用說明">'+ic('help',18)+'</button><button onclick="reload()" aria-label="重新整理">'+ic('refresh',18)+'</button><button onclick="logout()">登出</button></div>';
+  $('app').innerHTML=helpOpen?helpHtml():mainHtml();
+}
+function reload(){act(async()=>{const t=tab,d=await call('boot',{});me=d.me;tasks=d.tasks||[];P=d.pet;me.balance=P?P.balance:0;tab=t;fresh={tasks:Date.now()};if(['coins','family','new'].indexOf(t)>=0)await ensure(t,true);render()})}
+
+if(token){boot().catch(()=>logout())}else{authView();call('config').then(function(c){const v=String(c.showCreateFamily);if(v!==CFG.showCreateFamily){CFG.showCreateFamily=v;if(!me&&!token)authView()}}).catch(function(){})}
+</script>
+</body>
+</html>
