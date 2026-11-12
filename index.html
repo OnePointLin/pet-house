@@ -69,6 +69,7 @@ th,td{text-align:left;padding:8px;border-bottom:1px solid var(--line);vertical-a
 .board .bin{padding:8px 14px 10px}.board .bhead{display:inline-block;background:#E11D48;color:#fff;font-weight:900;letter-spacing:2px;border-radius:6px;padding:1px 10px;font-size:.8rem;margin-bottom:4px}
 .board .brow{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;padding:5px 0;border-top:1px dashed rgba(255,255,255,.25)}.board .brow:first-of-type{border-top:0}
 .board .bd{color:#FFD24A;font-weight:700}.board .bn{font-weight:900;font-size:1.05rem}.board .bi{color:#E9DFFB}.board .bo{background:#FFD24A;color:#2A1A3F;font-weight:900;border-radius:8px;padding:0 9px}
+.foods button:disabled{opacity:.45;cursor:default}
 .qty{display:flex;gap:6px;align-items:center;justify-content:center;margin:6px 0 2px}.qty .qn{min-width:2.2em;text-align:center;font-weight:700;font-size:1.05rem}.qty button{flex:0 0 44px;min-width:0;min-height:40px;padding:0;font-size:1.2rem;border-radius:10px;border:2px solid var(--line,#E8D5B8);background:#fff;font-weight:700;cursor:pointer}.qty button:disabled{opacity:.4;cursor:default}
 .ltdl{color:#C2410C;font-size:.82rem;margin:2px 0}
 .th svg{height:110px}
@@ -531,7 +532,7 @@ function petThumb(type,level,mood){return '<svg viewBox="-84 -76 168 136" role="
 function growThumb(type,level){return '<svg viewBox="-122 -96 244 160" role="img">'+pet({type:type||'cat',level:level,mood:'happy',acc:[]})+'</svg>'}
 </script>
 <script>
-let P=null,pickedType='cat',shopCat='food',confirmId='',buyQty={},coinList=[],levelMsg='',eatTimer=null,cancelAsk='',taskFilter='all';
+let P=null,pickedType='cat',shopCat='food',confirmId='',buyQty={},coinList=[],levelMsg='',eatTimer=null,feeding=false,cancelAsk='',taskFilter='all';
 const CATN={food:'飼料',costume:'服裝',background:'背景',furniture:'傢具'};
 const SLOTN={hat:'帽子',neck:'頸部',face:'臉部',back:'披風'};
 const MOOD={normal:'心情平穩',happy:'開心',hungry:'肚子餓了',sleepy:'想睡覺（好久沒來了）',sad:'難過（太久沒餵了）',eating:'吃東西中'};
@@ -610,18 +611,29 @@ function petTab(){
   const p=P.pet,lv=stageOf(p.level),next=P.levels.find(function(l){return l.level===p.level+1});
   const pct=next?Math.min(100,Math.round((p.exp-lv.expRequired)/(next.expRequired-lv.expRequired)*100)):100;
   const foods=P.items.filter(function(i){return i.category==='food'&&invQty(i.itemId)>0});
-  const fh=foods.length?'<div class="foods">'+foods.map(function(i){return '<button onclick="feed(\''+i.itemId+'\')">'+thumb(i)+'<span>'+esc(i.name)+' ×'+invQty(i.itemId)+'</span></button>'}).join('')+'</div>':
+  const fh=foods.length?'<div class="foods">'+foods.map(function(i){return '<button'+(feeding?' disabled':'')+' onclick="feed(\''+i.itemId+'\')">'+thumb(i)+'<span>'+esc(i.name)+' ×'+invQty(i.itemId)+'</span></button>'}).join('')+'</div>':
     '<div class="meta">背包裡沒有飼料了，快去完成任務賺取金幣，再來商店選購吧！</div><button class="pri" onclick="cTab(\'shop\')">前往商店</button>';
   return saleBoard()+'<div class="two"><div class="card sc">'+sceneOf()+'</div><div class="card"><div class="top"><b style="font-size:1.1rem">'+esc(p.name)+'</b><span class="chip">Lv.'+p.level+' '+esc(lv.stageName)+'</span></div>'+
     '<div class="meta">成長經驗 '+p.exp+(next?' / '+next.expRequired:'（已達最高等級）')+'</div><div class="bar"><i style="width:'+pct+'%"></i></div>'+
     '<div class="meta">目前體重 '+p.weight+' 公斤 ・ 狀態：'+(MOOD[p.mood]||'')+'</div><div class="meta">今日已餵食 '+P.feedsToday+' / '+P.feedLimit+' 次</div><h3 style="font-size:1rem;margin:12px 0 8px">餵食夥伴</h3>'+fh+'</div></div>';
 }
-function feed(id){act(async function(){
-  const r=await call('feed',{itemId:id});setP(r);P.pet.mood='eating';
-  if(r.fed&&r.fed.leveledUp){levelMsg=ic('star',20)+' 太棒了！'+esc(P.pet.name)+' 升級為 Lv.'+r.fed.newLevel+' '+esc(r.fed.stageName)+'！';setTimeout(function(){levelMsg='';if(me)render()},5000)}
-  render();clearTimeout(eatTimer);
-  eatTimer=setTimeout(function(){if(P&&P.pet){P.pet.mood='happy';if(tab==='pet'||tab==='bag')render()}},1800);
-})}
+function feed(id){
+  if(feeding||!P||!P.pet)return;
+  const prevMood=P.pet.mood;
+  feeding=true;P.pet.mood='eating';clearTimeout(eatTimer);
+  if(tab==='pet'||tab==='bag')render();
+  const t0=Date.now();
+  const wait=function(ms){return new Promise(function(r){setTimeout(r,ms)})};
+  return act(async function(){
+    let r;
+    try{r=await call('feed',{itemId:id},true)}
+    catch(e){feeding=false;if(P&&P.pet)P.pet.mood=prevMood;if(me)render();throw e}
+    const left=1500-(Date.now()-t0);if(left>0)await wait(left);
+    setP(r);P.pet.mood='happy';feeding=false;
+    if(r.fed&&r.fed.leveledUp){levelMsg=ic('star',20)+' 太棒了！'+esc(P.pet.name)+' 升級為 Lv.'+r.fed.newLevel+' '+esc(r.fed.stageName)+'！';setTimeout(function(){levelMsg='';if(me)render()},5000)}
+    if(me)render();
+  })
+}
 
 /* ---------- 商店 ---------- */
 function md(d){const m=String(d||'').match(/^\d{4}-(\d{2})-(\d{2})$/);return m?(+m[1])+'/'+(+m[2]):''}
@@ -812,9 +824,9 @@ function lsGet(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
 function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function busy(d){pending=Math.max(0,pending+d);$('loading').className=pending>0?'on':''}
-async function call(a,p){
+async function call(a,p,quiet){
   if(!API_URL)throw new Error('尚未設定後端網址：請在 config.js 填入 API_URL');
-  busy(1);
+  if(!quiet)busy(1);
   try{
     let r;
     try{
@@ -824,7 +836,7 @@ async function call(a,p){
     if(r&&r.newToken){token=r.newToken;lsSet('tk',token)}
     if(r&&r.ok)return r.data;
     throw new Error((r&&r.error)||'伺服器沒有回應');
-  }finally{busy(-1)}
+  }finally{if(!quiet)busy(-1)}
 }
 function toast(m,err){const t=$('toast');t.textContent=m;t.className='show'+(err?' err':'');clearTimeout(toast.h);toast.h=setTimeout(()=>t.className='',3000)}
 function act(fn){return fn().catch(e=>{const m=e.message||String(e);toast(m,true);if(/登入已過期/.test(m))logout()})}
@@ -863,7 +875,7 @@ function authView(){
 function enter(d,nm,fc){token=d.token;lsSet('tk',token);lsSet('nm',nm);if(fc)lsSet('fc',fc);applyBoot(d.boot)}
 function doLogin(){act(async()=>{const fc=$('fc').value.trim().toUpperCase(),nm=$('nm').value.trim();enter(await call('login',{familyCode:fc,name:nm,pin:$('pn').value}),nm,fc)})}
 function doRegister(){act(async()=>{const nm=$('nm').value.trim();const d=await call('register',{familyName:$('fn').value,name:nm,email:$('em').value,pin:$('pn').value});enter(d,nm,d.boot.me.familyCode)})}
-function resetState(){helpOpen=false;regMode=false;me=null;P=null;tasks=[];members=[];coinList=[];fresh={};tab='pet';levelMsg='';confirmId='';cancelAsk='';taskFilter='all';pickedType='cat';pending=0;busy(0)}
+function resetState(){feeding=false;helpOpen=false;regMode=false;me=null;P=null;tasks=[];members=[];coinList=[];fresh={};tab='pet';levelMsg='';confirmId='';cancelAsk='';taskFilter='all';pickedType='cat';pending=0;busy(0)}
 function logout(){token='';lsSet('tk','');resetState();authView()}
 function applyBoot(d){me=d.me;tasks=d.tasks||[];P=d.pet;members=[];coinList=[];me.balance=P?P.balance:0;tab='pet';fresh={tasks:Date.now()};render()}
 async function boot(){applyBoot(await call('boot',{touch:true}))}
