@@ -509,6 +509,49 @@ ACC.xmas_scarf='<defs><clipPath id="xsc"><path d="M-27 19 Q0 30 27 19 L27 27 Q0 
 })();
 
 
+/* ===== 武嶺（合歡山）背景 ===== */
+(function(){
+ let bricks='';
+ for(let r=0;r<6;r++){const y=152+r*15;bricks+='<path d="M0 '+y+' H360" stroke="#9A4A3A" stroke-width="1.2" opacity=".55"/>';
+  for(let c=-1;c<19;c++){const x=c*22+(r%2?11:0);bricks+='<path d="M'+x+' '+y+' V'+(y+15)+'" stroke="#9A4A3A" stroke-width="1" opacity=".45"/>'}}
+ let post='';[[8,0],[52,0],[96,0],[140,0],[222,0],[266,0],[310,0],[352,0]].forEach(function(p){post+='<rect x="'+p[0]+'" y="114" width="4" height="38" fill="#7C8794"/>'});
+ let roofTiles='';
+ for(let i=0;i<9;i++){const x=70+i*25;roofTiles+='<rect x="'+x+'" y="34" width="12" height="22" rx="5" fill="#C8472E"/><rect x="'+(x+1)+'" y="34" width="4" height="22" rx="2" fill="#E2735A" opacity=".7"/><ellipse cx="'+(x+6)+'" cy="57" rx="7" ry="5" fill="#9E3320"/><ellipse cx="'+(x+6)+'" cy="57" rx="4.5" ry="3" fill="#D45A3E"/>'}
+ BG.bg_wuling='<defs><linearGradient id="wlSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1C8CE6"/><stop offset=".55" stop-color="#7CC6F4"/><stop offset="1" stop-color="#F4FAFF"/></linearGradient>'+
+  '<linearGradient id="wlRoof" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B83A26"/><stop offset="1" stop-color="#8E2A1C"/></linearGradient></defs>'+
+  '<rect width="360" height="240" fill="url(#wlSky)"/>'+
+  '<ellipse cx="60" cy="40" rx="30" ry="6" fill="#fff" opacity=".5"/><ellipse cx="300" cy="22" rx="26" ry="5" fill="#fff" opacity=".45"/>'+
+  /* 遠山 */
+  '<path d="M0 118 L26 98 L58 108 L92 88 L130 106 L168 112 L168 120 H0Z" fill="#5C84B4"/>'+
+  '<path d="M200 118 L236 100 L282 108 L330 96 L360 106 V120 H200Z" fill="#6C93C0"/>'+
+  '<path d="M0 124 L40 110 L84 118 L130 112 L168 122 V126 H0Z" fill="#7BA0C8" opacity=".9"/>'+
+  /* 草坡與裸露的岩地 */
+  '<path d="M214 126 Q246 102 282 108 Q316 112 360 118 V130 H214Z" fill="#6E9A3E"/><path d="M236 124 Q266 112 296 116 Q330 118 360 124 V132 H236Z" fill="#88B24C"/>'+
+  '<path d="M0 126 H360 V150 H0Z" fill="#B89A74"/><path d="M0 134 Q60 128 120 134 T250 132 T360 134 V150 H0Z" fill="#A58662"/>'+
+  '<path d="M18 128 Q30 120 44 126 Q54 120 66 128Z" fill="#4E7A34"/><path d="M270 134 Q284 126 300 133 Q316 128 330 135Z" fill="#4E7A34"/>'+
+  /* 鐵欄杆 */
+  '<rect x="0" y="116" width="360" height="4" fill="#9AA5B1"/><rect x="0" y="134" width="360" height="3" fill="#9AA5B1"/>'+post+
+  /* 紅磚鋪面 */
+  '<rect x="0" y="150" width="360" height="90" fill="#C65C4A"/>'+bricks+
+  '<path d="M0 150 H360" stroke="#7C8794" stroke-width="3" opacity=".6"/>'+
+  /* 投幣望遠鏡 */
+  '<g transform="translate(330,150)"><rect x="-3" y="-40" width="6" height="40" fill="#3C434E"/><rect x="-7" y="-4" width="14" height="5" rx="1" fill="#2A2F38"/><rect x="-9" y="-62" width="18" height="12" rx="3" fill="#3C434E"/><rect x="-14" y="-72" width="9" height="12" rx="3" fill="#2A2F38"/><rect x="5" y="-72" width="9" height="12" rx="3" fill="#2A2F38"/><rect x="-12" y="-47" width="6" height="8" fill="#D9D9D9"/></g>'+
+  /* 涼亭石座 */
+  '<g transform="translate(-37,12) scale(.9)">'+
+  '<path d="M96 196 H264 L276 216 H84Z" fill="#B7B2A6"/><rect x="96" y="190" width="168" height="9" rx="2" fill="#D5D0C4"/><path d="M84 216 H276" stroke="#8A857A" stroke-width="2"/><path d="M110 202 L130 214 M180 203 L196 214 M230 203 L244 213" stroke="#8A857A" stroke-width="1.4" fill="none"/>'+
+  /* 柱子 */
+  '<rect x="100" y="70" width="14" height="122" fill="#B85A58"/><rect x="246" y="70" width="14" height="122" fill="#B85A58"/><rect x="102" y="70" width="4" height="122" fill="#D58682" opacity=".7"/><rect x="248" y="70" width="4" height="122" fill="#D58682" opacity=".7"/>'+
+  /* 大理石標示牌 */
+  '<rect x="118" y="72" width="124" height="78" fill="#E8F0F2"/><rect x="118" y="72" width="124" height="8" fill="#F3C640"/><rect x="118" y="142" width="124" height="8" fill="#F3C640"/>'+
+  '<rect x="126" y="82" width="108" height="58" fill="#D7DCDD"/><path d="M130 90 Q160 100 190 94 T230 100 M134 126 Q170 118 200 128 T232 122" stroke="#B9C0C2" stroke-width="2" fill="none"/>'+
+  '<text x="180" y="112" text-anchor="middle" font-size="26" font-weight="900" fill="#2B2B2B" font-family="\'Noto Sans TC\',\'Microsoft JhengHei\',sans-serif" letter-spacing="8">武嶺</text>'+
+  '<text x="180" y="132" text-anchor="middle" font-size="10" font-weight="700" fill="#3B3B3B" font-family="\'Noto Sans TC\',\'Microsoft JhengHei\',sans-serif">標高 3275 公尺</text>'+
+  /* 紅瓦屋頂 */
+  '<path d="M70 34 Q180 22 290 34 L300 52 Q180 40 60 52Z" fill="url(#wlRoof)"/>'+roofTiles+
+  '<path d="M60 52 Q180 40 300 52 L292 62 Q180 52 68 62Z" fill="#7A2A20"/><path d="M82 62 Q92 70 104 64 Q116 72 128 65 Q140 71 152 65 Q164 71 176 65 Q190 71 202 65 Q214 71 226 65 Q238 72 250 64 Q262 70 274 62" stroke="#E6B84A" stroke-width="2" fill="none"/>'+
+  '<path d="M64 60 Q76 66 92 62" fill="#3F9A6A" stroke="#2B7A50" stroke-width="1"/><path d="M296 60 Q284 66 268 62" fill="#3F9A6A" stroke="#2B7A50" stroke-width="1"/></g>';
+})();
+
 function sceneSvg(o){
   const S=[38,104,180,256,322], G=[205,205,190,205,205], sc=LV_SCALE[o.level]||LV_SCALE[1];
   let h='<svg viewBox="0 0 360 240" role="img" aria-label="寵物房間">'+(BG[o.bg]||BG.bg_none);
