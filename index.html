@@ -861,6 +861,22 @@ function cancelTask(id){
 function forceCancelTask(id){if(!$('fc_'+id).value.trim()){toast('強制中止必須填寫理由',true);return}if(askOnce('fc_'+id))return;act(async()=>{const d=await call('forceCancelTask',{taskId:id,reason:$('fc_'+id).value});toast('已由家長強制中止任務');tasks=d.tasks;fresh.tasks=Date.now();render()})}
 </script>
 <script>
+/* 自動更新：每次發佈新版請把 APP_VERSION 改成不同的值（例如日期）。使用者開啟或回到 App 時，會偷偷檢查線上版本，不同就自動重新載入 */
+const APP_VERSION='2026-11-12.3';
+function checkUpdate(){
+  try{
+    fetch(location.pathname+'?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){
+      const m=/const APP_VERSION='([^']+)'/.exec(t);
+      if(!m||m[1]===APP_VERSION)return;
+      if(feeding||pending>0)return;
+      const k='upd_'+m[1];
+      try{if(sessionStorage.getItem(k))return;sessionStorage.setItem(k,'1')}catch(e){}
+      location.reload();
+    }).catch(function(){});
+  }catch(e){}
+}
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')checkUpdate()});
+setTimeout(checkUpdate,1500);
 let token=lsGet('tk'),me=null,tab='pet',tasks=[],members=[],fresh={},regMode=false,pending=0;
 const $=id=>document.getElementById(id);
 function lsGet(k){try{return localStorage.getItem(k)||''}catch(e){return ''}}
