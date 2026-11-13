@@ -690,7 +690,13 @@ function ltdLine(i){
 function shopTab(){
   const cats=Object.keys(CATN);
   return '<div class="tabs sub">'+cats.map(function(c){return '<button class="'+(shopCat===c?'on':'')+'" onclick="shopCat=\''+c+'\';confirmId=\'\';render()">'+CATN[c]+'</button>'}).join('')+'</div>'+
-    '<div class="meta" style="margin-bottom:8px">目前擁有金幣：'+ic('coin',16)+' '+P.balance+'</div><div class="grid4">'+P.items.filter(function(i){return i.category===shopCat&&i.forSale}).map(shopCard).join('')+'</div>';
+    '<div class="meta" style="margin-bottom:8px">目前擁有金幣：'+ic('coin',16)+' '+P.balance+'</div>'+buyRuleNote()+'<div class="grid4">'+P.items.filter(function(i){return i.category===shopCat&&i.forSale}).map(shopCard).join('')+'</div>';
+}
+function buyRuleNote(){
+  const r=P.buyRule;if(!r||shopCat==='food')return '';
+  let t='購買商品可獲得 '+r.exp+' 經驗';
+  if(r.every>0){const left=r.every-(r.count%r.every);t+='；每買滿 '+r.every+' 件再加碼 '+r.bonus+' 經驗（已買 '+r.count+' 件，再買 '+left+' 件加碼）'}
+  return '<div class="card" style="margin-bottom:10px;padding:10px 14px;background:#FFF1D6;font-size:.92rem">'+t+'</div>';
 }
 function qtyOf(id){return buyQty[id]||1}
 function setQty(id,n){n=Math.max(1,Math.min(10,n));if((buyQty[id]||1)===n)return;buyQty[id]=n;confirmId='';render()}
@@ -703,7 +709,9 @@ function shopCard(i){
   else btn=confirmId===i.itemId?'<button class="ok" onclick="buy(\''+i.itemId+'\')">再按一次確認'+(q>1?' ×'+q+'（'+cost+' 金幣）':'')+'</button>':'<button class="pri" onclick="confirmId=\''+i.itemId+'\';render()">購買'+(q>1?' ×'+q:'')+'</button>';
   return '<div class="card item"><div class="th">'+thumb(i)+ltdBadge(i)+offTag(i)+'</div><b>'+esc(i.name)+'</b><div class="meta">'+ic('coin',14)+' '+priceHtml(i)+(food?'・+'+i.expGain+' 經驗'+(i.weightGain?'・+'+i.weightGain+' 公斤':'')+(own?'・持有 '+own:''):'')+'</div>'+ltdLine(i)+qsel+btn+'</div>';
 }
-function buy(id){act(async function(){const it=P.items.filter(function(x){return x.itemId===id})[0],q=(it&&it.category==='food')?qtyOf(id):1;setP(await call('buy',{itemId:id,qty:q}));confirmId='';delete buyQty[id];toast(q>1?'購買成功！已買 '+q+' 個':'購買成功！');render()})}
+function buy(id){act(async function(){const it=P.items.filter(function(x){return x.itemId===id})[0],q=(it&&it.category==='food')?qtyOf(id):1;setP(await call('buy',{itemId:id,qty:q}));confirmId='';delete buyQty[id];const _b=P.bought;toast(q>1?'購買成功！已買 '+q+' 個':(_b?'購買成功！獲得 '+_b.exp+' 經驗'+(_b.bonus?'，滿 '+(P.buyRule?P.buyRule.every:5)+' 件加碼 +'+_b.bonus:''):'購買成功！'));
+    if(_b&&_b.leveledUp){levelMsg=ic('star',20)+' 太棒了！'+esc(P.pet.name)+' 升級為 Lv.'+_b.newLevel+' '+esc(_b.stageName)+'！';setTimeout(function(){levelMsg='';if(me)render()},5000)}
+    render()})}
 
 /* ---------- 背包 ---------- */
 function bagTab(){
@@ -862,7 +870,7 @@ function forceCancelTask(id){if(!$('fc_'+id).value.trim()){toast('強制中止�
 </script>
 <script>
 /* 自動更新：每次發佈新版請把 APP_VERSION 改成不同的值（例如日期）。使用者開啟或回到 App 時，會偷偷檢查線上版本，不同就自動重新載入 */
-const APP_VERSION='2026-11-12.3';
+const APP_VERSION='2026-11-13.1';
 function checkUpdate(){
   try{
     fetch(location.pathname+'?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){
