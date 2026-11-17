@@ -871,7 +871,7 @@ function forceCancelTask(id){if(!$('fc_'+id).value.trim()){toast('強制中止�
 </script>
 <script>
 /* 自動更新：每次發佈新版請把 APP_VERSION 改成不同的值（例如日期）。使用者開啟或回到 App 時，會偷偷檢查線上版本，不同就自動重新載入 */
-const APP_VERSION='2026-11-17.2';
+const APP_VERSION='2026-11-17.3';
 function checkUpdate(){
   try{
     fetch(location.pathname+'?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){
