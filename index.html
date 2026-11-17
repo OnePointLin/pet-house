@@ -296,14 +296,14 @@ ACC.sci_goggles='<path d="M-39 -8 H-25 M25 -8 H39" stroke="#3A5F8F" stroke-width
  '<circle cx="-24.5" cy="-8" r="1.4" fill="#fff"/><circle cx="24.5" cy="-8" r="1.4" fill="#fff"/>';
 
 /* 家具 */
-FUR.bicycle=SH(40)+
+FUR.bicycle='<g transform="scale(1.4)">'+SH(40)+
  '<g stroke="#333" stroke-width="3" fill="none"><circle cx="-26" cy="-14" r="14"/><circle cx="26" cy="-14" r="14"/></g>'+
  '<g stroke="#9A9A9A" stroke-width="1"><path d="M-26 -28 V0 M-40 -14 H-12 M-36 -24 L-16 -4 M-36 -4 L-16 -24"/><path d="M26 -28 V0 M12 -14 H40 M16 -24 L36 -4 M16 -4 L36 -24"/></g>'+
  '<g stroke="#E24B4A" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M-26 -14 L-4 -14 L-12 -38 Z"/><path d="M-12 -38 L16 -40 L-4 -14"/><path d="M16 -40 L26 -14"/></g>'+
  '<rect x="-20" y="-44" width="14" height="5" rx="2.5" fill="#333"/><path d="M-12 -40 V-38" stroke="#333" stroke-width="3"/>'+
  '<path d="M16 -40 L14 -48 M8 -49 H22" stroke="#333" stroke-width="3" stroke-linecap="round" fill="none"/>'+
  '<circle cx="-4" cy="-14" r="4.5" fill="#FAC775" stroke="#BA7517" stroke-width="1.5"/><path d="M-4 -14 L2 -6" stroke="#555" stroke-width="3" stroke-linecap="round"/><rect x="-1" y="-8" width="8" height="3" rx="1.5" fill="#333"/>'+
- '<circle cx="26" cy="-14" r="2.5" fill="#555"/><circle cx="-26" cy="-14" r="2.5" fill="#555"/>';
+ '<circle cx="26" cy="-14" r="2.5" fill="#555"/><circle cx="-26" cy="-14" r="2.5" fill="#555"/></g>';
 FUR.toilet=SH(26)+
  '<rect x="-15" y="-62" width="30" height="24" rx="5" fill="#F4F7FA" stroke="#B8C7DE" stroke-width="2"/><rect x="-5" y="-66" width="10" height="5" rx="2.5" fill="#B8C7DE"/>'+
  '<rect x="-10" y="-10" width="20" height="10" rx="3" fill="#E6EDF4" stroke="#B8C7DE" stroke-width="2"/>'+
@@ -871,7 +871,7 @@ function forceCancelTask(id){if(!$('fc_'+id).value.trim()){toast('強制中止�
 </script>
 <script>
 /* 自動更新：每次發佈新版請把 APP_VERSION 改成不同的值（例如日期）。使用者開啟或回到 App 時，會偷偷檢查線上版本，不同就自動重新載入 */
-const APP_VERSION='2026-11-17.1';
+const APP_VERSION='2026-11-17.2';
 function checkUpdate(){
   try{
     fetch(location.pathname+'?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){
