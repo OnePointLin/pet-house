@@ -87,6 +87,7 @@ h3.sec{font-size:1rem;margin:18px 0 8px}
 @keyframes pop{0%{transform:scale(.8);opacity:0}100%{transform:none;opacity:1}}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
 @keyframes hop{0%,100%{transform:translateY(0)}30%{transform:translateY(-16px)}60%{transform:translateY(0)}80%{transform:translateY(-6px)}}
+.pw,.ps{transform-box:fill-box;transform-origin:50% 62%}
 .bob{animation:bob 2.4s ease-in-out infinite}.hop{animation:hop .6s ease infinite}
 @media(prefers-reduced-motion:reduce){.bob,.hop,.banner{animation:none}}
 #loading{position:fixed;inset:0;background:rgba(60,60,60,.45);display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#fff;font-weight:700;z-index:100;touch-action:none}
@@ -554,13 +555,13 @@ ACC.xmas_scarf='<defs><clipPath id="xsc"><path d="M-27 19 Q0 30 27 19 L27 27 Q0 
 
 function sceneSvg(o){
   const S=[38,104,180,256,322], G=[205,205,190,205,205], sc=LV_SCALE[o.level]||LV_SCALE[1];
-  let h='<svg viewBox="0 0 360 240" role="img" aria-label="寵物房間">'+(BG[o.bg]||BG.bg_none);
+  let h='<svg viewBox="0 0 360 240" role="img" aria-label="寵物房間" data-mx="'+Math.max(30,Math.round(165-44*sc[0]))+'">'+(BG[o.bg]||BG.bg_none);
   (o.fur||[]).slice().sort(function(a,b){return a.slot===2?-1:(b.slot===2?1:a.slot-b.slot)}).forEach(function(f){
     if(FUR[f.key]&&S[f.slot]!==undefined)h+='<g transform="translate('+S[f.slot]+','+G[f.slot]+') scale(.8)">'+FUR[f.key]+'</g>';
   });
   const ty=218-39*sc[1];
-  h+='<ellipse cx="180" cy="219" rx="'+(40*sc[0]).toFixed(0)+'" ry="5" fill="#000" opacity=".12"/>';
-  h+='<g transform="translate(180,'+ty.toFixed(1)+')"><g class="'+(o.cls||'bob')+'">'+pet(o)+'</g></g></svg>';
+  h+='<g class="ps"><ellipse cx="180" cy="219" rx="'+(40*sc[0]).toFixed(0)+'" ry="5" fill="#000" opacity=".12"/></g>';
+  h+='<g transform="translate(180,'+ty.toFixed(1)+')"><g class="pw"><g class="'+(o.cls||'bob')+'">'+pet(o)+'</g></g></g></svg>';
   return h;
 }
 
@@ -870,7 +871,7 @@ function forceCancelTask(id){if(!$('fc_'+id).value.trim()){toast('強制中止�
 </script>
 <script>
 /* 自動更新：每次發佈新版請把 APP_VERSION 改成不同的值（例如日期）。使用者開啟或回到 App 時，會偷偷檢查線上版本，不同就自動重新載入 */
-const APP_VERSION='2026-11-13.1';
+const APP_VERSION='2026-11-17.1';
 function checkUpdate(){
   try{
     fetch(location.pathname+'?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){
@@ -961,7 +962,49 @@ async function ensure(k,force){
 function render(){
   $('hd').innerHTML='<h1>'+ic('cat',28)+' 家事寵物樂園</h1><div class="who"><span class="chip">'+ic('coin',16)+' '+me.balance+'</span><span>'+esc(me.name)+'（'+(me.role==='parent'?'家長':'小孩')+'）</span><button onclick="showHelp()" aria-label="使用說明">'+ic('help',18)+'</button><button onclick="reload()" aria-label="重新整理">'+ic('refresh',18)+'</button><button onclick="logout()">登出</button></div>';
   $('app').innerHTML=helpOpen?helpHtml():mainHtml();
+  startWander();
 }
+/* ---------- 寵物閒晃：停留在寵物頁超過 2 秒後，寵物會自己走來走去、跳來跳去、翻滾彈跳 ---------- */
+let wTimer=null,wAnim=[],wX=0,wDir=1,wLast='';
+function stopWander(){clearTimeout(wTimer);wTimer=null;wAnim.forEach(function(a){try{a.cancel()}catch(e){}});wAnim=[]}
+function startWander(){
+  stopWander();wX=0;wDir=1;
+  if(tab!=='pet'||feeding||helpOpen||!P||!P.pet||!document.querySelector('.sc svg .pw'))return;
+  if(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches)return;
+  wTimer=setTimeout(wanderNext,2000);
+}
+function wanderNext(){
+  const sv=document.querySelector('.sc svg'),pw=sv&&sv.querySelector('.pw'),ps=sv&&sv.querySelector('.ps');
+  if(!pw||tab!=='pet'||feeding||helpOpen)return;
+  if(document.hidden){wTimer=setTimeout(wanderNext,1500);return}
+  const mx=Number(sv.getAttribute('data-mx'))||80,rnd=Math.random;
+  const acts=['walk','hop','flip'].filter(function(a){return a!==wLast}),a=acts[Math.floor(rnd()*acts.length)];wLast=a;
+  const F=[];let dur=1500;
+  function target(minD){let t,n=0;do{t=Math.round((rnd()*2-1)*mx);n++}while(Math.abs(t-wX)<minD&&n<20);return t}
+  function bounce(x0,x1,H,rot,sy){ // 一次彈跳：從 x0 到 x1，最高 H，旋轉 rot 度
+    for(let i=1;i<=8;i++){const t=i/8;F.push({x:x0+(x1-x0)*t,y:-4*H*t*(1-t),r:rot*t,sy:(i===8&&sy)?sy:1})}
+  }
+  F.push({x:wX,y:0,r:0,sy:1});
+  if(a==='walk'){
+    const t=target(50),d=t-wX,steps=Math.max(4,Math.round(Math.abs(d)/14));wDir=d<0?-1:1;
+    for(let i=1;i<=steps;i++)F.push({x:wX+d*i/steps,y:(i%2?-6:0),r:0,sy:1});
+    dur=Math.max(1200,Math.abs(d)*30);wX=t;
+  }else if(a==='hop'){
+    const n=3+Math.floor(rnd()*2);let x=wX;
+    for(let i=0;i<n;i++){let nx=x+(i%2?-1:1)*(18+rnd()*14)*(wX>mx*0.5?-1:1);nx=Math.max(-mx,Math.min(mx,nx));wDir=nx<x?-1:(nx>x?1:wDir);bounce(x,nx,26,0);x=nx}
+    wX=x;dur=n*520;
+  }else{
+    const t1=target(40),t2=target(40),s=(t1>wX?1:-1);wDir=t2<t1?-1:1;
+    bounce(wX,t1,70,360*s,.85);bounce(t1,t2,60,360*(t2>t1?1:-1),.85);wX=t2;dur=1800;
+  }
+  const n=F.length-1;
+  const fr=F.map(function(f,i){return {offset:i/n,transform:'translate('+f.x.toFixed(1)+'px,'+f.y.toFixed(1)+'px) rotate('+f.r.toFixed(0)+'deg) scale('+wDir+','+f.sy+')'}});
+  const sfr=F.map(function(f,i){return {offset:i/n,transform:'translate('+f.x.toFixed(1)+'px,0px)'}});
+  const an=pw.animate(fr,{duration:dur,easing:'linear',fill:'forwards'});wAnim.push(an);
+  if(ps){wAnim.push(ps.animate(sfr,{duration:dur,easing:'linear',fill:'forwards'}))}
+  an.onfinish=function(){wTimer=setTimeout(wanderNext,700+rnd()*1600)};
+}
+
 function reload(){act(async()=>{const t=tab,d=await call('boot',{});me=d.me;tasks=d.tasks||[];P=d.pet;me.balance=P?P.balance:0;tab=t;fresh={tasks:Date.now()};if(['coins','family','new'].indexOf(t)>=0)await ensure(t,true);render()})}
 
 if(token){boot().catch(()=>logout())}else{authView();call('config').then(function(c){const v=String(c.showCreateFamily);if(v!==CFG.showCreateFamily){CFG.showCreateFamily=v;if(!me&&!token)authView()}}).catch(function(){})}
