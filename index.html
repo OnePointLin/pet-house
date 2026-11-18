@@ -873,7 +873,7 @@ function forceCancelTask(id){if(!$('fc_'+id).value.trim()){toast('強制中止�
 </script>
 <script>
 /* 自動更新：每次發佈新版請把 APP_VERSION 改成不同的值（例如日期）。使用者開啟或回到 App 時，會偷偷檢查線上版本，不同就自動重新載入 */
-const APP_VERSION='2026-11-18.1';
+const APP_VERSION='2026-11-18.2';
 function checkUpdate(){
   try{
     fetch(location.pathname+'?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){
@@ -963,7 +963,7 @@ async function ensure(k,force){
 }
 
 function render(){
-  $('hd').innerHTML='<h1>'+ic('cat',28)+' 家事寵物樂園</h1><div class="who"><span class="chip">'+ic('coin',16)+' '+me.balance+'</span><span>'+esc(me.name)+'（'+(me.role==='parent'?'家長':'小孩')+'）</span><button onclick="pushToggle()" class="'+(pushOn?'bellon':'')+'" aria-label="'+(pushOn?'關閉通知':'開啟通知')+'">'+ic('bell',18)+'</button><button onclick="showHelp()" aria-label="使用說明">'+ic('help',18)+'</button><button onclick="reload()" aria-label="重新整理">'+ic('refresh',18)+'</button><button onclick="logout()">登出</button></div>';
+  $('hd').innerHTML='<h1>'+ic('cat',28)+' 家事寵物樂園</h1><div class="who"><span class="chip">'+ic('coin',16)+' '+me.balance+'</span><span>'+esc(me.name)+'（'+(me.role==='parent'?'家長':'小孩')+'）</span><button onclick="pushToggle()" class="'+(pushOn?'bellon':'')+'" aria-label="'+(pushOn?'關閉通知':'開啟通知')+'">'+ic('bell',18)+'</button><button onclick="reload()" aria-label="重新整理">'+ic('refresh',18)+'</button><button onclick="logout()">登出</button></div>';
   $('app').innerHTML=helpOpen?helpHtml():mainHtml();
   startWander();
 }
